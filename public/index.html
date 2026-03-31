@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOREC Structure & MOREC School - Guider, Motiver, Inspirer</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="LogoMorecStructure.jpeg" type="image/jpeg">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-container">
+            <a href="#accueil" class="logo">
+                <img src="LogoMorecStructure.jpeg" alt="MOREC Structure Logo">
+            </a>
+            <button class="nav-toggle" id="navToggle" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#accueil">Accueil</a></li>
+                <li><a href="#apropos">À Propos</a></li>
+                <li><a href="#formations">Formations</a></li>
+                <li><a href="#evenements">Événements</a></li>
+                <li><a href="#cours">Cours</a></li>
+                <li><a href="#galerie">Galerie</a></li>
+                <li><a href="#temoignages">Témoignages</a></li>
+                <li><a href="#" class="btn-nav btn-membre" id="btnDevenirMembre"><i class="fas fa-user-plus"></i> Devenir Membre</a></li>
+                <li><a href="#contact" class="btn-nav">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="accueil">
+        <div class="hero-carousel" id="heroCarousel">
+            <!-- Dynamic slides loaded from API -->
+        </div>
+        <div class="hero-overlay"></div>
+        <div class="container hero-content">
+            <span class="hero-badge">Guider &bull; Motiver &bull; Inspirer</span>
+            <h1>Formez-vous au <span class="highlight">Leadership</span> d'Impact</h1>
+            <p class="hero-subtitle"><strong>MOREC Structure</strong> porte une vision : impacter tous ceux qui ont le mandat d'influencer les autres. À travers <strong>MOREC School</strong>, sa filiale pédagogique, cette vision se déploie en leadership, management et développement personnel.</p>
+            <div class="hero-btns">
+                <a href="#formations" class="btn btn-primary">Découvrir MOREC School</a>
+                <a href="#apropos" class="btn btn-outline">Notre vision</a>
+            </div>
+            <div class="hero-stats" id="heroStats">
+                <!-- Dynamic stats loaded from API -->
+            </div>
+        </div>
+        <div class="hero-carousel-dots" id="heroCarouselDots"></div>
+    </section>
+
+    <!-- Citation du Jour -->
+    <section class="citation-section" id="citation">
+        <div class="container">
+            <div class="citation-card" id="citationCard">
+                <div class="citation-icon">
+                    <i class="fas fa-quote-left"></i>
+                </div>
+                <blockquote id="citationTexte">Chargement...</blockquote>
+                <cite id="citationAuteur"></cite>
+                <span class="citation-badge"><i class="fas fa-sun"></i> Citation du jour</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- À Propos -->
+    <section class="section apropos" id="apropos">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Qui sommes-nous</span>
+                <h2>À Propos de <span class="highlight">MOREC</span></h2>
+            </div>
+            <div class="apropos-grid">
+                <div class="apropos-image">
+                    <img src="LogoMorecStructure.jpeg" alt="MOREC Structure">
+                    <div class="apropos-badge">
+                        <span>10+</span>
+                        <small>Années d'excellence</small>
+                    </div>
+                </div>
+                <div class="apropos-text">
+                    <h3>MOREC Structure — La vision</h3>
+                    <p><strong>MOREC Structure</strong> est la structure mère. Elle porte une vision globale : <em>impacter tous ceux qui ont le mandat d'influencer les autres</em>, quels que soient leur domaine d'intervention, leur responsabilité ou leur sphère d'influence. MOREC Structure se positionne comme un cadre stratégique de transformation, de formation et d'inspiration des leaders d'impact selon le modèle de Christ.</p>
+                    <h3>MOREC School — La mission</h3>
+                    <p><strong>MOREC School</strong> est la filiale pédagogique et opérationnelle de MOREC Structure. Elle a pour mission de <em>former, équiper et accompagner</em> des leaders capables d'influencer positivement leur communauté, leurs organisations et la société, en restant fidèles aux valeurs d'excellence, d'intégrité et de service. La vision se déploie à travers trois axes majeurs : le leadership, le management et le développement personnel.</p>
+                    <div class="apropos-values">
+                        <div class="value-item">
+                            <i class="fas fa-compass"></i>
+                            <div>
+                                <strong>Guider</strong>
+                                <span>Montrer la voie aux leaders de demain</span>
+                            </div>
+                        </div>
+                        <div class="value-item">
+                            <i class="fas fa-bolt"></i>
+                            <div>
+                                <strong>Motiver</strong>
+                                <span>Inspirer l'action et l'engagement</span>
+                            </div>
+                        </div>
+                        <div class="value-item">
+                            <i class="fas fa-star"></i>
+                            <div>
+                                <strong>Inspirer</strong>
+                                <span>Transformer les vies par l'exemple</span>
+                            </div>
+                        </div>
+                        <div class="value-item">
+                            <i class="fas fa-hands-helping"></i>
+                            <div>
+                                <strong>Excellence & Intégrité</strong>
+                                <span>Des valeurs au cœur de notre action</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Formations -->
+    <section class="section formations" id="formations">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">MOREC School</span>
+                <h2>Nos <span class="highlight">Formations</span></h2>
+                <p class="section-desc">À travers MOREC School, des programmes conçus pour développer vos compétences en leadership, management et développement personnel.</p>
+            </div>
+            <div class="formations-grid" id="formationsGrid">
+                <!-- Dynamic formations loaded from API -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Événements -->
+    <section class="section evenements" id="evenements">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Nos Événements</span>
+                <h2>Événements & <span class="highlight">Actualités</span></h2>
+                <p class="section-desc">Découvrez nos prochains événements : formations, conférences, sessions de coaching et masterclass.</p>
+            </div>
+            <!-- Filtres -->
+            <div class="event-filters">
+                <button class="event-filter active" data-filter="all">Tous</button>
+                <button class="event-filter" data-filter="formation">Formations</button>
+                <button class="event-filter" data-filter="conference">Conférences</button>
+                <button class="event-filter" data-filter="coaching">Coaching</button>
+                <button class="event-filter" data-filter="masterclass">Masterclass</button>
+            </div>
+            <div class="events-grid" id="eventsGrid">
+                <!-- Dynamic events loaded from API -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Cours -->
+    <section class="section cours" id="cours">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Nos Cours</span>
+                <h2>Cours & <span class="highlight">Vidéos</span></h2>
+                <p class="section-desc">Suivez nos playlists thématiques et testez vos connaissances avec les évaluations intégrées.</p>
+            </div>
+
+            <div class="playlists-container" id="playlistsContainer">
+                <!-- Dynamic playlists loaded from API -->
+            </div>
+
+            <!-- Documents PDF des cours -->
+            <div class="section-header" style="margin-top:60px;">
+                <span class="section-tag">Ressources</span>
+                <h2>Documents <span class="highlight">PDF</span></h2>
+                <p class="section-desc">Téléchargez les supports de cours au format PDF pour approfondir vos connaissances.</p>
+            </div>
+            <div class="cours-pdfs-grid" id="coursPdfsGrid">
+                <!-- Dynamic PDFs loaded from API -->
+            </div>
+
+            <!-- Cours Live -->
+            <div class="section-header" style="margin-top:60px;">
+                <span class="section-tag">En direct</span>
+                <h2>Cours <span class="highlight">Live</span> <i class="fas fa-broadcast-tower" style="color:var(--red);font-size:0.7em;"></i></h2>
+                <p class="section-desc">Participez à nos sessions de formation en direct. Espace réservé aux membres inscrits.</p>
+            </div>
+            <div class="cours-live-preview" id="coursLivePreview">
+                <!-- Dynamic cours live cards loaded from API -->
+            </div>
+            <div style="text-align:center;margin-top:24px;">
+                <a href="/cours-live" class="btn btn-primary"><i class="fas fa-broadcast-tower"></i> Accéder à l'espace Cours Live</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pourquoi Nous -->
+    <section class="section galerie" id="galerie">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Nos Photos</span>
+                <h2>Galerie <span class="highlight">Photos</span></h2>
+                <p class="section-desc">Revivez les moments forts de nos événements à travers nos albums photos.</p>
+            </div>
+            <div class="albums-grid" id="albumsGrid">
+                <!-- Dynamic albums loaded from API -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal Galerie Photo -->
+    <div class="modal-overlay" id="modalGalerie">
+        <div class="modal modal-galerie">
+            <button class="modal-close" id="closeModalGalerie"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <span class="modal-icon galerie"><i class="fas fa-images"></i></span>
+                <h3 id="galerieAlbumTitle">Album</h3>
+            </div>
+            <div class="galerie-photos-grid" id="galeriePhotosGrid">
+                <!-- Photos loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Lightbox -->
+    <div class="lightbox-overlay" id="lightboxOverlay">
+        <button class="lightbox-close" id="lightboxClose"><i class="fas fa-times"></i></button>
+        <button class="lightbox-nav lightbox-prev" id="lightboxPrev"><i class="fas fa-chevron-left"></i></button>
+        <img class="lightbox-img" id="lightboxImg" src="" alt="">
+        <p class="lightbox-caption" id="lightboxCaption"></p>
+        <button class="lightbox-nav lightbox-next" id="lightboxNext"><i class="fas fa-chevron-right"></i></button>
+    </div>
+
+    <!-- Pourquoi Nous -->
+    <section class="section pourquoi" id="pourquoi">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Nos Avantages</span>
+                <h2>Pourquoi choisir <span class="highlight">MOREC School</span> ?</h2>
+            </div>
+            <div class="pourquoi-grid" id="pourquoiGrid">
+                <!-- Dynamic pourquoi loaded from API -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Témoignages -->
+    <section class="section temoignages" id="temoignages">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Témoignages</span>
+                <h2>Ce que disent nos <span class="highlight">Apprenants</span></h2>
+            </div>
+            <div class="temoignages-grid" id="temoignagesGrid">
+                <!-- Dynamic témoignages loaded from API -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Équipe -->
+    <section class="section equipe" id="equipe">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Notre Équipe</span>
+                <h2>Nos <span class="highlight">Formateurs</span></h2>
+                <p class="section-desc">Des experts passionnés au service de votre développement.</p>
+            </div>
+            <div class="equipe-grid" id="equipeGrid">
+                <!-- Dynamic équipe loaded from API -->
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>Prêt à développer votre leadership ?</h2>
+            <p>Rejoignez la communauté de leaders formés par MOREC School et transformez votre impact. <em>Guider, Motiver, Inspirer.</em></p>
+            <a href="#contact" class="btn btn-primary btn-lg">Rejoindre MOREC School</a>
+        </div>
+    </section>
+
+    <!-- Contact -->
+    <section class="section contact" id="contact">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Contact</span>
+                <h2>Contactez-<span class="highlight">nous</span></h2>
+                <p class="section-desc">Une question ? N'hésitez pas à nous écrire. Notre équipe vous répondra dans les plus brefs délais.</p>
+            </div>
+            <div class="contact-grid">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div>
+                            <strong>Adresse</strong>
+                            <p>Abidjan, Côte d'Ivoire</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div>
+                            <strong>Téléphone</strong>
+                            <p>+225 XX XX XX XX XX</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div>
+                            <strong>Email</strong>
+                            <p>contact@morecstructure.com</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div>
+                            <strong>Horaires</strong>
+                            <p>Lun - Ven : 08h00 - 18h00</p>
+                        </div>
+                    </div>
+                    <div class="contact-social">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-whatsapp"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <form class="contact-form" id="contactForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nom">Nom complet</label>
+                            <input type="text" id="nom" name="nom" placeholder="Votre nom" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" placeholder="Votre email" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="telephone">Téléphone</label>
+                        <input type="tel" id="telephone" name="telephone" placeholder="Votre téléphone">
+                    </div>
+                    <div class="form-group">
+                        <label for="formation">Formation souhaitée</label>
+                        <select id="contactFormation" name="formation">
+                            <option value="">Choisir une formation</option>
+                            <!-- Dynamic options loaded from API -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" name="message" rows="5" placeholder="Votre message..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Envoyer le message</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-about">
+                    <img src="LogoMorecStructure.jpeg" alt="MOREC Structure" class="footer-logo">
+                    <p><strong>MOREC Structure</strong> — Cadre stratégique de transformation des leaders d'impact. <strong>MOREC School</strong> — Former, équiper et accompagner. <em>Guider, Motiver, Inspirer.</em></p>
+                    <div class="footer-social">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-whatsapp"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h4>Liens rapides</h4>
+                    <ul>
+                        <li><a href="#accueil">Accueil</a></li>
+                        <li><a href="#apropos">À Propos</a></li>
+                        <li><a href="#formations">Formations</a></li>
+                        <li><a href="#temoignages">Témoignages</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Formations</h4>
+                    <ul>
+                        <li><a href="#formations">Leadership Fondamental</a></li>
+                        <li><a href="#formations">Leadership Stratégique</a></li>
+                        <li><a href="#formations">Management</a></li>
+                        <li><a href="#formations">Développement Personnel</a></li>
+                        <li><a href="#formations">Leadership Spirituel</a></li>
+                    </ul>
+                </div>
+                <div class="footer-newsletter">
+                    <h4>Newsletter</h4>
+                    <p>Recevez nos actualités et offres de formation.</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Votre email" required>
+                        <button type="submit"><i class="fas fa-paper-plane"></i></button>
+                    </form>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 MOREC Structure & MOREC School. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scroll to top -->
+    <button class="scroll-top" id="scrollTop" aria-label="Retour en haut">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+
+    <!-- Modal Devenir Membre -->
+    <div class="modal-overlay" id="modalMembre">
+        <div class="modal">
+            <button class="modal-close" id="closeModalMembre"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <span class="modal-icon membre"><i class="fas fa-id-card"></i></span>
+                <h3>Devenir Membre MOREC</h3>
+            </div>
+            <p class="modal-desc">Rejoignez notre communauté de leaders. Choisissez votre type de membre et remplissez le formulaire.</p>
+            <form class="modal-form" id="formMembre">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="membreNom"><i class="fas fa-user"></i> Nom *</label>
+                        <input type="text" id="membreNom" name="nom" required placeholder="Votre nom">
+                    </div>
+                    <div class="form-group">
+                        <label for="membrePrenom"><i class="fas fa-user"></i> Prénom *</label>
+                        <input type="text" id="membrePrenom" name="prenom" required placeholder="Votre prénom">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="membreEmail"><i class="fas fa-envelope"></i> Email *</label>
+                        <input type="email" id="membreEmail" name="email" required placeholder="votre@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="membreTel"><i class="fas fa-phone"></i> Téléphone *</label>
+                        <input type="tel" id="membreTel" name="telephone" required placeholder="+225 07 00 00 00 00">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="membreType"><i class="fas fa-id-badge"></i> Type de membre *</label>
+                    <select id="membreType" name="type_membre" required>
+                        <option value="" disabled selected>Choisir un type de membre</option>
+                        <option value="sympathisant">Sympathisant — Soutien moral et intérêt pour nos activités</option>
+                        <option value="actif">Actif — Participation régulière aux événements et formations</option>
+                        <option value="tres_actif">Très Actif — Engagement fort, bénévolat et leadership</option>
+                        <option value="honoraire">Honoraire — Membre d'honneur pour contribution exceptionnelle</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="membrePassword"><i class="fas fa-lock"></i> Mot de passe * <small>(min. 6 caractères — pour accéder aux Cours Live)</small></label>
+                    <input type="password" id="membrePassword" name="password" required minlength="6" placeholder="Choisissez un mot de passe">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="membreVille"><i class="fas fa-map-marker-alt"></i> Ville</label>
+                        <input type="text" id="membreVille" name="ville" placeholder="Votre ville">
+                    </div>
+                    <div class="form-group">
+                        <label for="membreProfession"><i class="fas fa-briefcase"></i> Profession</label>
+                        <input type="text" id="membreProfession" name="profession" placeholder="Votre profession">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-check-circle"></i> S'enregistrer comme Membre</button>
+            </form>
+            <div class="modal-success hidden" id="membreSuccess">
+                <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+                <h3>Bienvenue chez MOREC !</h3>
+                <p>Votre enregistrement a été effectué avec succès. Nous sommes ravis de vous compter parmi nos membres.</p>
+                <button class="btn btn-primary" onclick="document.getElementById('modalMembre').classList.remove('active'); document.getElementById('membreSuccess').classList.add('hidden'); document.getElementById('formMembre').classList.remove('hidden'); document.getElementById('formMembre').reset();">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Inscription Événement -->
+    <div class="modal-overlay" id="modalInscription">
+        <div class="modal">
+            <button class="modal-close" id="closeInscription"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <span class="modal-icon"><i class="fas fa-calendar-check"></i></span>
+                <h3>Inscription à l'Événement</h3>
+            </div>
+            <div class="modal-event-info" id="modalEventInfo">
+                <p><strong id="modalEventName"></strong></p>
+                <p><i class="fas fa-calendar-alt"></i> <span id="modalEventDate"></span> &bull; <i class="fas fa-map-marker-alt"></i> <span id="modalEventLieu"></span></p>
+            </div>
+            <form class="modal-form" id="formInscription">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="inscNom"><i class="fas fa-user"></i> Nom complet *</label>
+                        <input type="text" id="inscNom" name="nom" required placeholder="Votre nom complet" />
+                    </div>
+                    <div class="form-group">
+                        <label for="inscEmail"><i class="fas fa-envelope"></i> Email *</label>
+                        <input type="email" id="inscEmail" name="email" required placeholder="votre@email.com" />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="inscTel"><i class="fas fa-phone"></i> Téléphone *</label>
+                        <input type="tel" id="inscTel" name="telephone" required placeholder="+225 07 00 00 00 00" />
+                    </div>
+                    <div class="form-group">
+                        <label for="inscOrg"><i class="fas fa-building"></i> Organisation</label>
+                        <input type="text" id="inscOrg" name="organisation" placeholder="Votre entreprise (optionnel)" />
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-check-circle"></i> Confirmer l'Inscription</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Évaluation / Quiz -->
+    <div class="modal-overlay" id="modalEvaluation">
+        <div class="modal modal-quiz">
+            <button class="modal-close" id="closeEvaluation"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <span class="modal-icon quiz"><i class="fas fa-clipboard-check"></i></span>
+                <h3>Évaluation : <span id="quizPlaylistName"></span></h3>
+            </div>
+            <div class="quiz-progress-bar">
+                <div class="quiz-progress-fill" id="quizProgressFill"></div>
+            </div>
+            <p class="quiz-counter" id="quizCounter">Question 1 / 5</p>
+            <div class="quiz-body" id="quizBody">
+                <p class="quiz-question" id="quizQuestion"></p>
+                <div class="quiz-options" id="quizOptions"></div>
+            </div>
+            <div class="quiz-nav">
+                <button class="btn btn-secondary" id="quizPrev" disabled><i class="fas fa-arrow-left"></i> Précédent</button>
+                <button class="btn btn-primary" id="quizNext">Suivant <i class="fas fa-arrow-right"></i></button>
+            </div>
+            <!-- Résultat -->
+            <div class="quiz-result hidden" id="quizResult">
+                <div class="result-circle" id="resultCircle">
+                    <span id="resultScore">0%</span>
+                </div>
+                <h3 id="resultTitle"></h3>
+                <p id="resultMessage"></p>
+                <button class="btn btn-primary" id="quizRetry"><i class="fas fa-redo"></i> Recommencer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Vidéo Player -->
+    <div class="modal-overlay" id="modalVideo">
+        <div class="modal modal-video-player">
+            <button class="modal-close" id="closeVideo"><i class="fas fa-times"></i></button>
+            <div class="video-player-area">
+                <div class="video-placeholder-large"><i class="fas fa-play-circle"></i><p>Lecteur vidéo — Contenu à venir</p></div>
+            </div>
+            <div class="video-player-info">
+                <h3 id="videoPlayerTitle"></h3>
+                <p id="videoPlayerDesc"></p>
+                <button class="btn btn-primary btn-mark-watched" id="btnMarkWatched"><i class="fas fa-check"></i> Marquer comme vu</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

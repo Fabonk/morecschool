@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cours Live — MOREC School</title>
+    <link rel="icon" href="LogoMorecStructure.jpeg" type="image/jpeg">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="cours-live.css">
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="cl-navbar">
+        <div class="cl-nav-container">
+            <a href="/" class="cl-logo">
+                <img src="LogoMorecStructure.jpeg" alt="MOREC">
+                <span>MOREC <strong>Cours Live</strong></span>
+            </a>
+            <div class="cl-nav-right" id="navRight">
+                <!-- Dynamic: login button or member info -->
+                <a href="/" class="cl-nav-link"><i class="fas fa-home"></i> Accueil</a>
+                <button class="btn-cl btn-login" id="btnShowLogin"><i class="fas fa-sign-in-alt"></i> Connexion Membre</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Banner -->
+    <section class="cl-hero">
+        <div class="cl-hero-content">
+            <span class="cl-badge"><i class="fas fa-broadcast-tower"></i> Espace Membres</span>
+            <h1>Cours <span class="highlight">Live</span></h1>
+            <p>Participez en direct à nos sessions de formation exclusives réservées aux membres MOREC School.</p>
+        </div>
+    </section>
+
+    <!-- Login Modal -->
+    <div class="cl-modal-overlay" id="loginModal">
+        <div class="cl-modal">
+            <button class="cl-modal-close" id="closeLogin"><i class="fas fa-times"></i></button>
+            <div class="cl-modal-header">
+                <span class="cl-modal-icon"><i class="fas fa-lock"></i></span>
+                <h3>Connexion Membre</h3>
+                <p>Connectez-vous avec votre email et mot de passe de membre</p>
+            </div>
+            <form id="loginForm" class="cl-form">
+                <div class="cl-form-group">
+                    <label for="loginEmail"><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" id="loginEmail" required placeholder="votre@email.com" autocomplete="email">
+                </div>
+                <div class="cl-form-group">
+                    <label for="loginPassword"><i class="fas fa-lock"></i> Mot de passe</label>
+                    <input type="password" id="loginPassword" required placeholder="Votre mot de passe" autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-cl btn-primary-cl"><i class="fas fa-sign-in-alt"></i> Se connecter</button>
+                <p class="cl-login-error hidden" id="loginError"></p>
+                <p class="cl-login-hint">Pas encore membre ? <a href="/" id="linkRegister">Inscrivez-vous sur la page d'accueil</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Cours Live Content -->
+    <main class="cl-main">
+        <!-- Guest View -->
+        <div class="cl-guest-view" id="guestView">
+            <div class="cl-lock-icon"><i class="fas fa-lock"></i></div>
+            <h2>Espace réservé aux membres</h2>
+            <p>Connectez-vous pour accéder aux cours live et participer en direct aux sessions de formation.</p>
+            <button class="btn-cl btn-primary-cl" id="btnGuestLogin"><i class="fas fa-sign-in-alt"></i> Se connecter</button>
+            <p class="cl-hint">Pas encore membre ? <a href="/">Rejoignez MOREC</a> et créez votre compte.</p>
+        </div>
+
+        <!-- Member View (hidden until login) -->
+        <div class="cl-member-view hidden" id="memberView">
+            <!-- Welcome Bar -->
+            <div class="cl-welcome-bar">
+                <div class="cl-welcome-left">
+                    <div class="cl-avatar" id="memberAvatar">MS</div>
+                    <div>
+                        <h3 id="memberGreeting">Bienvenue, Membre</h3>
+                        <span class="cl-member-badge" id="memberBadge">Membre Actif</span>
+                    </div>
+                </div>
+                <button class="btn-cl btn-outline-cl" id="btnLogout"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+            </div>
+
+            <!-- Stats bar -->
+            <div class="cl-stats-bar">
+                <div class="cl-stat-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span id="statProchains">0</span>
+                    <small>Cours à venir</small>
+                </div>
+                <div class="cl-stat-item">
+                    <i class="fas fa-broadcast-tower"></i>
+                    <span id="statEnCours">0</span>
+                    <small>En cours maintenant</small>
+                </div>
+                <div class="cl-stat-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span id="statTermines">0</span>
+                    <small>Terminés</small>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="cl-filters">
+                <button class="cl-filter active" data-filter="all">Tous</button>
+                <button class="cl-filter" data-filter="planifie"><i class="fas fa-clock"></i> Planifiés</button>
+                <button class="cl-filter" data-filter="en_cours"><i class="fas fa-broadcast-tower"></i> En cours</button>
+                <button class="cl-filter" data-filter="termine"><i class="fas fa-check"></i> Terminés</button>
+            </div>
+
+            <!-- Cours Live Cards Grid -->
+            <div class="cl-courses-grid" id="coursesGrid">
+                <!-- Dynamic content -->
+            </div>
+
+            <div class="cl-empty hidden" id="emptyState">
+                <i class="fas fa-video-slash"></i>
+                <p>Aucun cours live disponible pour le moment.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="cl-footer">
+        <p>&copy; 2026 MOREC Structure & MOREC School — Espace Cours Live réservé aux membres</p>
+    </footer>
+
+    <!-- Notification Toast -->
+    <div class="cl-toast hidden" id="toast">
+        <span id="toastMsg"></span>
+    </div>
+
+    <script src="cours-live.js"></script>
+</body>
+</html>

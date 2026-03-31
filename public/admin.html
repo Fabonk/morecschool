@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOREC Structure - Administration</title>
+    <link rel="icon" href="LogoMorecStructure.jpeg" type="image/jpeg">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+    <!-- Login Screen -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-card">
+            <img src="LogoMorecStructure.jpeg" alt="MOREC" class="login-logo">
+            <h2>Administration</h2>
+            <p>Connectez-vous pour gérer le site</p>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Nom d'utilisateur</label>
+                    <input type="text" id="loginUser" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-lock"></i> Mot de passe</label>
+                    <input type="password" id="loginPass" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-admin-primary"><i class="fas fa-sign-in-alt"></i> Se connecter</button>
+                <p class="login-error hidden" id="loginError"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div class="admin-panel hidden" id="adminPanel">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="LogoMorecStructure.jpeg" alt="MOREC" class="sidebar-logo">
+                <span>MOREC Admin</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-section="dashboard"><i class="fas fa-tachometer-alt"></i> Tableau de bord</a>
+                <a href="#" class="nav-item" data-section="hero_slides"><i class="fas fa-images"></i> Carousel Hero</a>
+                <a href="#" class="nav-item" data-section="stats"><i class="fas fa-chart-bar"></i> Statistiques</a>
+                <a href="#" class="nav-item" data-section="citations"><i class="fas fa-quote-left"></i> Citations</a>
+                <a href="#" class="nav-item" data-section="formations"><i class="fas fa-graduation-cap"></i> Formations</a>
+                <a href="#" class="nav-item" data-section="evenements"><i class="fas fa-calendar-alt"></i> Événements</a>
+                <a href="#" class="nav-item" data-section="playlists"><i class="fas fa-play-circle"></i> Playlists</a>
+                <a href="#" class="nav-item" data-section="videos"><i class="fas fa-video"></i> Vidéos</a>
+                <a href="#" class="nav-item" data-section="quiz"><i class="fas fa-clipboard-check"></i> Quiz</a>
+                <a href="#" class="nav-item" data-section="pourquoi"><i class="fas fa-star"></i> Pourquoi Nous</a>
+                <a href="#" class="nav-item" data-section="temoignages"><i class="fas fa-comments"></i> Témoignages</a>
+                <a href="#" class="nav-item" data-section="equipe"><i class="fas fa-users"></i> Équipe</a>
+                <a href="#" class="nav-item" data-section="albums"><i class="fas fa-camera-retro"></i> Galerie Photos</a>
+                <a href="#" class="nav-item" data-section="cours_pdfs"><i class="fas fa-file-pdf"></i> Documents PDF</a>
+                <a href="#" class="nav-item" data-section="cours_live"><i class="fas fa-broadcast-tower"></i> Cours Live</a>
+                <hr>
+                <a href="#" class="nav-item" data-section="inscriptions"><i class="fas fa-user-plus"></i> Inscriptions</a>
+                <a href="#" class="nav-item" data-section="membres"><i class="fas fa-id-card"></i> Membres</a>
+                <a href="#" class="nav-item" data-section="messages"><i class="fas fa-envelope"></i> Messages</a>
+                <a href="#" class="nav-item" data-section="scores"><i class="fas fa-trophy"></i> Scores Quiz</a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="/" target="_blank"><i class="fas fa-external-link-alt"></i> Voir le site</a>
+                <button id="btnLogout"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+                <h1 id="pageTitle">Tableau de bord</h1>
+                <div class="admin-user">
+                    <span id="adminName">Admin</span>
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </header>
+
+            <div class="admin-content" id="adminContent">
+                <!-- Dynamic content loaded here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal CRUD -->
+    <div class="modal-overlay hidden" id="crudModal">
+        <div class="modal-admin">
+            <div class="modal-admin-header">
+                <h3 id="crudModalTitle">Ajouter</h3>
+                <button class="modal-close-admin" id="closeCrudModal"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="crudForm" class="modal-admin-body">
+                <div id="crudFields"></div>
+                <div class="modal-admin-footer">
+                    <button type="button" class="btn-admin-secondary" id="cancelCrud">Annuler</button>
+                    <button type="submit" class="btn-admin-primary" id="saveCrud"><i class="fas fa-save"></i> Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirm Delete Modal -->
+    <div class="modal-overlay hidden" id="deleteModal">
+        <div class="modal-admin modal-sm">
+            <div class="modal-admin-header danger">
+                <h3><i class="fas fa-exclamation-triangle"></i> Confirmer la suppression</h3>
+            </div>
+            <div class="modal-admin-body">
+                <p>Êtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible.</p>
+            </div>
+            <div class="modal-admin-footer">
+                <button class="btn-admin-secondary" id="cancelDelete">Annuler</button>
+                <button class="btn-admin-danger" id="confirmDelete"><i class="fas fa-trash"></i> Supprimer</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
