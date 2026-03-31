@@ -478,10 +478,6 @@ async function changeMembreType(id, currentType) {
     } catch (err) { notify(err.message, 'error'); }
 }
 
-        loadSection('membres');
-    } catch (err) { notify(err.message, 'error'); }
-}
-
 // ===== HERO SLIDES SECTION =====
 async function renderHeroSlides() {
     const data = await apiFetch('/api/admin/hero-slides');
