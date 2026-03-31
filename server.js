@@ -248,16 +248,25 @@ app.post('/api/membres', (req, res) => {
 // ============================================================
 
 app.post('/api/auth/login', (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) {
-        return res.status(400).json({ error: 'Identifiants requis' });
+    try {
+        const { username, password } = req.body;
+        if (!username || !password) {
+            return res.status(400).json({ error: 'Identifiants requis' });
+        }
+        const admin = db.prepare('SELECT * FROM admins WHERE username = ?').get(username);
+        if (!admin || !bcrypt.compareSync(password, admin.password)) {
+            return res.status(401).json({ error: 'Identifiants incorrects' });
+        }
+        if (!process.env.JWT_SECRET) {
+            console.error('JWT_SECRET is not set!');
+            return res.status(500).json({ error: 'Configuration serveur manquante (JWT_SECRET)' });
+        }
+        const token = jwt.sign({ id: admin.id, username: admin.username }, process.env.JWT_SECRET, { expiresIn: '8h' });
+        res.json({ token, username: admin.username });
+    } catch (err) {
+        console.error('Login error:', err);
+        res.status(500).json({ error: 'Erreur serveur lors de la connexion' });
     }
-    const admin = db.prepare('SELECT * FROM admins WHERE username = ?').get(username);
-    if (!admin || !bcrypt.compareSync(password, admin.password)) {
-        return res.status(401).json({ error: 'Identifiants incorrects' });
-    }
-    const token = jwt.sign({ id: admin.id, username: admin.username }, process.env.JWT_SECRET, { expiresIn: '8h' });
-    res.json({ token, username: admin.username });
 });
 
 app.get('/api/auth/me', authMiddleware, (req, res) => {
