@@ -144,13 +144,19 @@ async function loadHeroSlides() {
         const slides = await res.json();
         const carousel = document.getElementById('heroCarousel');
         const dots = document.getElementById('heroCarouselDots');
-        if (!carousel || slides.length === 0) return;
+        if (!carousel) return;
+
+        // Si aucune slide, afficher un fond par défaut
+        if (!slides || slides.length === 0) {
+            carousel.innerHTML = '<div class="hero-slide active" style="background:linear-gradient(135deg, var(--red-dark) 0%, var(--red) 40%, #C0392B 100%)"></div>';
+            return;
+        }
 
         carousel.innerHTML = slides.map((s, i) =>
             `<div class="hero-slide${i === 0 ? ' active' : ''}" style="background-image:url('${escapeHTML(s.image)}')"></div>`
         ).join('');
 
-        if (slides.length > 1) {
+        if (dots && slides.length > 1) {
             dots.innerHTML = slides.map((_, i) =>
                 `<button class="hero-dot${i === 0 ? ' active' : ''}" data-index="${i}"></button>`
             ).join('');
@@ -163,12 +169,17 @@ async function loadHeroSlides() {
                 });
             });
 
-            heroSlideTimer = setInterval(() => {
-                heroSlideIndex = (heroSlideIndex + 1) % slides.length;
-                updateHeroSlide();
-            }, 5000);
+            startHeroTimer(slides.length);
         }
     } catch (e) { console.error('Error loading hero slides:', e); }
+}
+
+function startHeroTimer(count) {
+    if (heroSlideTimer) clearInterval(heroSlideTimer);
+    heroSlideTimer = setInterval(() => {
+        heroSlideIndex = (heroSlideIndex + 1) % count;
+        updateHeroSlide();
+    }, 5000);
 }
 
 function updateHeroSlide() {
@@ -179,13 +190,9 @@ function updateHeroSlide() {
 }
 
 function resetHeroTimer() {
-    if (heroSlideTimer) clearInterval(heroSlideTimer);
     const slides = document.querySelectorAll('.hero-slide');
     if (slides.length > 1) {
-        heroSlideTimer = setInterval(() => {
-            heroSlideIndex = (heroSlideIndex + 1) % slides.length;
-            updateHeroSlide();
-        }, 5000);
+        startHeroTimer(slides.length);
     }
 }
 

@@ -487,29 +487,60 @@ async function renderHeroSlides() {
     const data = await apiFetch('/api/admin/hero-slides');
     let html = `
         <div class="table-header">
-            <h2>Carousel Hero (${data.length})</h2>
-            <label class="btn-admin-primary btn-sm" style="cursor:pointer"><i class="fas fa-plus"></i> Ajouter une image
+            <h2><i class="fas fa-images"></i> Carousel Hero (${data.length})</h2>
+            <label class="btn-admin-primary btn-sm" style="cursor:pointer"><i class="fas fa-plus"></i> Ajouter des images
                 <input type="file" accept="image/*" id="heroSlideUpload" style="display:none" multiple>
             </label>
         </div>
-        <p style="color:#666;margin-bottom:16px;font-size:0.9rem">Ces images s'affichent en arrière-plan de la section d'accueil (hero). Ajoutez plusieurs images pour créer un carousel automatique.</p>
-        <div class="hero-slides-grid">`;
+        <p style="color:#666;margin-bottom:16px;font-size:0.9rem">Ces images s'affichent en diaporama dans la section d'accueil. Ajoutez plusieurs images pour créer un défilement automatique.</p>`;
 
-    data.forEach(slide => {
-        html += `<div class="admin-slide-card">
-            <img src="${escapeHTML(slide.image)}" alt="Slide">
-            <div class="admin-slide-actions">
-                <span class="admin-slide-order">Ordre: ${slide.ordre}</span>
-                <button class="btn-icon delete" title="Supprimer" onclick="deleteHeroSlide(${slide.id})"><i class="fas fa-trash"></i></button>
-            </div>
-        </div>`;
-    });
+    if (data.length === 0) {
+        html += `<div class="empty-state"><i class="fas fa-image" style="font-size:3rem;color:#ccc;margin-bottom:12px"></i><p>Aucune image dans le carousel.<br>Cliquez sur "Ajouter des images" pour commencer.</p></div>`;
+    } else {
+        html += `<table class="admin-table hero-table">
+            <thead>
+                <tr>
+                    <th style="width:60px">#</th>
+                    <th style="width:120px">Aperçu</th>
+                    <th>URL de l'image</th>
+                    <th style="width:100px">Ordre</th>
+                    <th style="width:140px">Actions</th>
+                </tr>
+            </thead>
+            <tbody>`;
+        data.forEach((slide, idx) => {
+            html += `<tr>
+                <td><strong>${idx + 1}</strong></td>
+                <td><img src="${escapeHTML(slide.image)}" alt="Slide ${idx + 1}" class="hero-table-thumb"></td>
+                <td class="hero-url-cell"><span class="hero-url-text" title="${escapeHTML(slide.image)}">${escapeHTML(slide.image)}</span></td>
+                <td>
+                    <input type="number" class="hero-order-input" value="${slide.ordre}" min="0"
+                        onchange="updateHeroSlideOrder(${slide.id}, this.value)">
+                </td>
+                <td>
+                    <div class="hero-action-btns">
+                        <button class="btn-icon-sm primary" title="Monter" onclick="moveHeroSlide(${slide.id}, 'up', ${slide.ordre})" ${idx === 0 ? 'disabled' : ''}>
+                            <i class="fas fa-arrow-up"></i>
+                        </button>
+                        <button class="btn-icon-sm primary" title="Descendre" onclick="moveHeroSlide(${slide.id}, 'down', ${slide.ordre})" ${idx === data.length - 1 ? 'disabled' : ''}>
+                            <i class="fas fa-arrow-down"></i>
+                        </button>
+                        <button class="btn-icon-sm danger" title="Supprimer" onclick="deleteHeroSlide(${slide.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>`;
+        });
+        html += `</tbody></table>`;
+    }
 
-    html += '</div>';
     content.innerHTML = html;
 
     document.getElementById('heroSlideUpload').addEventListener('change', async function() {
         const files = this.files;
+        if (!files.length) return;
+        notify('Upload en cours...', 'info');
         for (let i = 0; i < files.length; i++) {
             const fd = new FormData();
             fd.append('image', files[i]);
@@ -523,9 +554,31 @@ async function renderHeroSlides() {
                 });
             } catch (err) { notify('Erreur upload: ' + err.message, 'error'); }
         }
-        notify('Image(s) ajoutée(s)');
+        notify('Image(s) ajoutée(s) avec succès');
         loadSection('hero_slides');
     });
+}
+
+async function updateHeroSlideOrder(id, newOrder) {
+    try {
+        const fd = new FormData();
+        fd.append('ordre', parseInt(newOrder));
+        const token = localStorage.getItem('morec_admin_token');
+        const res = await fetch(`/api/admin/hero-slides/${id}`, {
+            method: 'PUT',
+            headers: { 'Authorization': 'Bearer ' + token },
+            body: fd
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur');
+        notify('Ordre mis à jour');
+        loadSection('hero_slides');
+    } catch (err) { notify(err.message, 'error'); }
+}
+
+async function moveHeroSlide(id, direction, currentOrder) {
+    const newOrder = direction === 'up' ? currentOrder - 1 : currentOrder + 1;
+    await updateHeroSlideOrder(id, newOrder);
 }
 
 async function deleteHeroSlide(id) {
