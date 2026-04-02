@@ -11,6 +11,9 @@ const { db, seedIfEmpty } = require('./database');
 const authMiddleware = require('./middleware/auth');
 const memberAuthMiddleware = require('./middleware/memberAuth');
 
+// JWT secret with fallback default
+const JWT_SECRET = process.env.JWT_SECRET || 'morec-school-default-secret-2026';
+
 // Seed database on first run
 seedIfEmpty();
 
@@ -257,11 +260,7 @@ app.post('/api/auth/login', (req, res) => {
         if (!admin || !bcrypt.compareSync(password, admin.password)) {
             return res.status(401).json({ error: 'Identifiants incorrects' });
         }
-        if (!process.env.JWT_SECRET) {
-            console.error('JWT_SECRET is not set!');
-            return res.status(500).json({ error: 'Configuration serveur manquante (JWT_SECRET)' });
-        }
-        const token = jwt.sign({ id: admin.id, username: admin.username }, process.env.JWT_SECRET, { expiresIn: '8h' });
+        const token = jwt.sign({ id: admin.id, username: admin.username }, JWT_SECRET, { expiresIn: '8h' });
         res.json({ token, username: admin.username });
     } catch (err) {
         console.error('Login error:', err);
@@ -288,7 +287,7 @@ app.post('/api/membres/login', (req, res) => {
     }
     const token = jwt.sign(
         { id: membre.id, email: membre.email, nom: membre.nom, prenom: membre.prenom, role: 'membre' },
-        process.env.JWT_SECRET,
+        JWT_SECRET,
         { expiresIn: '24h' }
     );
     res.json({ token, membre: { id: membre.id, nom: membre.nom, prenom: membre.prenom, email: membre.email, type_membre: membre.type_membre } });
