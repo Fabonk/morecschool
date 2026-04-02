@@ -25,6 +25,10 @@ async function apiFetch(url, options = {}) {
     if (TOKEN) headers['Authorization'] = `Bearer ${TOKEN}`;
     const res = await fetch(API + url, { ...options, headers });
     if (res.status === 401) { logout(); throw new Error('Session expirée'); }
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+        throw new Error('Le serveur est en cours de démarrage. Veuillez patienter quelques secondes et réessayer.');
+    }
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Erreur serveur');
     return data;
