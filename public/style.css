@@ -297,6 +297,7 @@ ul {
     border-radius: 50%;
     background: rgba(232, 169, 23, 0.1);
     animation: float 6s ease-in-out infinite;
+    z-index: 0;
 }
 
 .hero::after {
@@ -309,6 +310,7 @@ ul {
     border-radius: 50%;
     background: rgba(232, 169, 23, 0.08);
     animation: float 8s ease-in-out infinite reverse;
+    z-index: 0;
 }
 
 @keyframes float {
@@ -321,11 +323,12 @@ ul {
     inset: 0;
     background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.03)" d="M0,160L48,170.7C96,181,192,203,288,186.7C384,171,480,117,576,117.3C672,117,768,171,864,186.7C960,203,1056,181,1152,154.7C1248,128,1344,96,1392,80L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
     background-size: cover;
+    z-index: 2;
 }
 
 .hero-content {
     position: relative;
-    z-index: 2;
+    z-index: 3;
     max-width: 800px;
     padding-top: 100px;
 }
@@ -2304,7 +2307,7 @@ ul {
 .hero-carousel {
     position: absolute;
     inset: 0;
-    z-index: 0;
+    z-index: 1;
 }
 
 .hero-slide {
@@ -2314,6 +2317,13 @@ ul {
     background-position: center;
     opacity: 0;
     transition: opacity 1.2s ease;
+}
+
+.hero-slide::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(139, 0, 0, 0.5);
 }
 
 .hero-slide.active {
@@ -2327,7 +2337,7 @@ ul {
     transform: translateX(-50%);
     display: flex;
     gap: 10px;
-    z-index: 5;
+    z-index: 4;
 }
 
 .hero-dot {
