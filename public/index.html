@@ -27,11 +27,14 @@
                 <li><a href="#apropos">À Propos</a></li>
                 <li><a href="#formations">Formations</a></li>
                 <li><a href="#evenements">Événements</a></li>
-                <li><a href="#cours">Cours</a></li>
-                <li><a href="#galerie">Galerie</a></li>
-                <li><a href="#temoignages">Témoignages</a></li>
-                <li><a href="#" class="btn-nav btn-membre" id="btnDevenirMembre"><i class="fas fa-user-plus"></i> Devenir Membre</a></li>
-                <li><a href="#contact" class="btn-nav">Contact</a></li>
+                <li><a href="#cours" class="nav-icon" data-tooltip="Cours" aria-label="Cours"><i class="fas fa-book-open"></i><span class="nav-label">Cours</span></a></li>
+                <li><a href="#galerie" class="nav-icon" data-tooltip="Galerie" aria-label="Galerie"><i class="fas fa-images"></i><span class="nav-label">Galerie</span></a></li>
+                <li><a href="#temoignages" class="nav-icon" data-tooltip="Témoignages" aria-label="Témoignages"><i class="fas fa-quote-right"></i><span class="nav-label">Témoignages</span></a></li>
+                <li class="nav-auth" id="navAuth">
+                    <a href="#" class="btn-nav btn-login nav-icon" id="btnSeConnecter" data-tooltip="Se connecter" aria-label="Se connecter"><i class="fas fa-sign-in-alt"></i><span class="nav-label">Se connecter</span></a>
+                </li>
+                <li><a href="#" class="btn-nav btn-membre nav-icon" id="btnDevenirMembre" data-tooltip="Devenir Membre" aria-label="Devenir Membre"><i class="fas fa-user-plus"></i><span class="nav-label">Devenir Membre</span></a></li>
+                <li><a href="#contact" class="btn-nav nav-icon" data-tooltip="Contact" aria-label="Contact"><i class="fas fa-envelope"></i><span class="nav-label">Contact</span></a></li>
             </ul>
         </div>
     </nav>
@@ -424,6 +427,33 @@
     <button class="scroll-top" id="scrollTop" aria-label="Retour en haut">
         <i class="fas fa-chevron-up"></i>
     </button>
+
+    <!-- Modal Connexion (membre ou admin) -->
+    <div class="modal-overlay" id="modalLogin">
+        <div class="modal modal-login">
+            <button class="modal-close" id="closeModalLogin"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <span class="modal-icon login"><i class="fas fa-lock"></i></span>
+                <h3>Connexion</h3>
+            </div>
+            <p class="modal-desc">Accédez à votre espace membre ou à l'administration du site.</p>
+            <form class="modal-form" id="formLogin">
+                <div class="form-group">
+                    <label for="loginIdentifiant"><i class="fas fa-envelope"></i> Email ou identifiant</label>
+                    <input type="text" id="loginIdentifiant" required placeholder="votre@email.com" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="loginMotDePasse"><i class="fas fa-lock"></i> Mot de passe</label>
+                    <input type="password" id="loginMotDePasse" required placeholder="Votre mot de passe" autocomplete="current-password">
+                </div>
+                <p class="login-error-msg hidden" id="loginErrorMsg"></p>
+                <button type="submit" class="btn btn-primary btn-block" id="btnSubmitLogin">
+                    <i class="fas fa-sign-in-alt"></i> Se connecter
+                </button>
+                <p class="login-hint">Pas encore membre ? <a href="#" id="linkVersInscription">Devenir membre</a></p>
+            </form>
+        </div>
+    </div>
 
     <!-- Modal Devenir Membre -->
     <div class="modal-overlay" id="modalMembre">

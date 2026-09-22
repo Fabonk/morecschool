@@ -594,35 +594,9 @@ body {
 }
 
 /* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-    .sidebar {
-        transform: translateX(-100%);
-    }
-    .sidebar.open {
-        transform: translateX(0);
-    }
-    .sidebar-toggle {
-        display: block;
-    }
-    .admin-main {
-        margin-left: 0;
-    }
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-    .dashboard-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-@media (max-width: 480px) {
-    .dashboard-grid {
-        grid-template-columns: 1fr;
-    }
-    .admin-content {
-        padding: 16px;
-    }
-}
+/* Les media queries de ce fichier sont regroupées à la fin, après TOUTES les
+   règles de base : sinon les sections définies plus bas (grilles hero, albums,
+   photos) échappent au responsive et peuvent écraser les media queries. */
 
 /* ===== HERO SLIDES ADMIN ===== */
 .hero-slides-grid {
@@ -892,4 +866,265 @@ body {
 
 .btn-admin-secondary:hover {
     background: var(--gray-200);
+}
+
+/* ===== COMPTES ADMIN ===== */
+.compte-form {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.compte-form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+
+.admin-hint {
+    margin-top: 16px;
+    color: var(--gray-600);
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
+
+.admin-hint i { color: var(--gold); }
+
+.admin-hint strong { color: var(--gray-800); }
+
+/* ===== CONTENU ÉDITORIAL ===== */
+/* Intertitre de groupe dans le menu latéral */
+.nav-groupe {
+    display: block;
+    padding: 14px 20px 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* Écran « Textes du site » : un bloc par groupe, enregistrable séparément */
+.textes-groupe {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 20px 24px 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.textes-groupe-titre {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    color: var(--dark);
+    padding-bottom: 12px;
+    margin-bottom: 18px;
+    border-bottom: 2px solid var(--gold);
+}
+
+.textes-groupe .form-group {
+    margin-bottom: 18px;
+}
+
+.textes-groupe label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 6px;
+}
+
+.textes-groupe input[type="text"],
+.textes-groupe textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--gray-800);
+    background: var(--white);
+}
+
+.textes-groupe input[type="text"]:focus,
+.textes-groupe textarea:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(232, 169, 23, 0.15);
+}
+
+.textes-groupe textarea {
+    resize: vertical;
+    line-height: 1.6;
+}
+
+/* La clé technique, discrète : utile pour relier un champ à son gabarit */
+.textes-cle {
+    display: block;
+    margin-top: 4px;
+    font-family: monospace;
+    font-size: 0.7rem;
+    color: var(--gray-500);
+}
+
+/* Voile derrière le menu latéral ouvert en mobile : sans lui, le contenu
+   restait cliquable sous le menu et rien n'indiquait comment le refermer. */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+/* ============================================================
+   RESPONSIVE — regroupé volontairement en fin de fichier
+   ============================================================ */
+
+/* --- Tablette --- */
+@media (max-width: 1024px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+    .albums-admin-grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+}
+
+/* --- Mobile : le menu latéral passe en tiroir --- */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        width: min(280px, 85vw);
+    }
+    .sidebar.open {
+        transform: translateX(0);
+    }
+    .sidebar.open ~ .sidebar-overlay,
+    .sidebar-overlay.visible {
+        display: block;
+    }
+    .sidebar-toggle {
+        display: block;
+    }
+    .admin-main {
+        margin-left: 0;
+        min-width: 0; /* sans cela, une table large empêche le flex de rétrécir */
+    }
+
+    .admin-header {
+        padding: 0 14px;
+        gap: 10px;
+    }
+    .admin-header h1 {
+        font-size: 1rem;
+    }
+    /* On garde l'icône, on masque le nom : il poussait le titre hors écran */
+    .admin-user span {
+        display: none;
+    }
+    .admin-content {
+        padding: 16px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    .dashboard-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    /* Grilles définies après l'ancien bloc responsive, donc jamais adaptées */
+    .albums-admin-grid {
+        grid-template-columns: 1fr;
+    }
+    .hero-slides-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+    .admin-photos-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+    .album-form-panel,
+    .album-photos-panel {
+        padding: 16px;
+    }
+
+    .table-header {
+        align-items: flex-start;
+    }
+    .modal-overlay {
+        padding: 12px;
+    }
+    .modal-admin {
+        max-height: 95vh;
+    }
+}
+
+/* --- Petit mobile --- */
+@media (max-width: 480px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    .admin-content {
+        padding: 12px;
+    }
+    .admin-header {
+        padding: 0 10px;
+    }
+
+    .hero-slides-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .admin-photos-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .modal-admin-header,
+    .modal-admin-body,
+    .modal-admin-footer {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+    .modal-admin-footer {
+        flex-wrap: wrap;
+    }
+
+    /* Un tableau reste un tableau : on le fait défiler horizontalement
+       plutôt que de le disloquer en cartes, pour garder les colonnes
+       comparables. On réduit seulement la densité. */
+    .data-table {
+        min-width: 520px;
+    }
+    .data-table th,
+    .data-table td {
+        padding: 10px 12px;
+        font-size: 0.82rem;
+    }
+    .data-table td {
+        max-width: 180px;
+    }
+
+    .login-card {
+        padding: 28px 20px;
+    }
+
+    /* La notification faisait 400px de large, donc débordait sous 440px */
+    .admin-notification {
+        left: 12px;
+        right: 12px;
+        max-width: none;
+    }
+    .compte-form {
+        padding: 16px;
+    }
+    .compte-form-actions button {
+        flex: 1;
+    }
 }

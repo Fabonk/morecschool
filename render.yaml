@@ -2,14 +2,25 @@ services:
   - type: web
     name: morecschool
     runtime: node
-    plan: free
+    # Un disque persistant exige un plan payant : le plan free n'en propose pas,
+    # et sans disque la base SQLite est recréée vide à chaque déploiement.
+    plan: starter
     buildCommand: npm install
     startCommand: node server.js
+    healthCheckPath: /api/stats
+    disk:
+      name: morec-data
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
+      # Indique à database.js d'écrire sur le disque persistant plutôt que
+      # dans le dossier du code, effacé à chaque déploiement.
+      - key: DATA_DIR
+        value: /var/data
       - key: JWT_SECRET
         sync: false
       - key: ADMIN_DEFAULT_USER

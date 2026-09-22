@@ -560,6 +560,17 @@ h1, h2, h3, h4 { font-family: 'Montserrat', sans-serif; }
     color: var(--gray-700);
     line-height: 1.6;
     margin-bottom: 16px;
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+}
+
+/* Sous-titre de l'en-tête : justifié mais dernière ligne recentrée */
+.cl-hero-content > p {
+    text-align: justify;
+    text-align-last: center;
+    hyphens: auto;
+    -webkit-hyphens: auto;
 }
 
 .cl-card-meta {
@@ -675,7 +686,27 @@ h1, h2, h3, h4 { font-family: 'Montserrat', sans-serif; }
 .hidden { display: none !important; }
 
 /* ===== RESPONSIVE ===== */
+/* Une modale doit toujours pouvoir défiler : sans cela, en paysage sur
+   téléphone, le bas du formulaire de connexion devient inatteignable. */
+.cl-modal-overlay {
+    padding: 16px;
+    overflow-y: auto;
+}
+
+.cl-modal {
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+}
+
+/* --- Tablette --- */
+@media (max-width: 1024px) {
+    .cl-courses-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+}
+
 @media (max-width: 768px) {
+    .cl-hero { padding: 44px 20px; }
     .cl-hero h1 { font-size: 1.8rem; }
 
     .cl-stats-bar {
@@ -706,8 +737,45 @@ h1, h2, h3, h4 { font-family: 'Montserrat', sans-serif; }
 }
 
 @media (max-width: 480px) {
-    .cl-navbar { padding: 0 12px; }
-    .cl-hero { padding: 40px 16px; }
+    .cl-navbar { padding: 0 12px; gap: 8px; }
+    .cl-hero { padding: 36px 16px; }
+    .cl-hero h1 { font-size: 1.5rem; }
     .cl-main { padding: 24px 12px; }
-    .cl-card-header h3 { font-size: 1rem; padding-right: 70px; }
+
+    /* Le badge de statut est positionné en absolu en haut à droite :
+       le titre doit lui réserver sa place pour ne pas passer dessous. */
+    .cl-card-header {
+        padding: 20px 16px 14px;
+    }
+    .cl-card-header h3 {
+        font-size: 1rem;
+        padding-right: 82px;
+    }
+    .cl-card-status {
+        top: 12px;
+        right: 12px;
+        font-size: 0.68rem;
+        padding: 3px 9px;
+    }
+
+    .cl-card-body { padding: 16px; }
+    .cl-card-footer { padding: 14px 16px; flex-wrap: wrap; gap: 10px; }
+
+    .cl-modal-overlay { padding: 10px; }
+    .cl-modal {
+        padding: 22px 18px;
+        width: 100%;
+        max-height: calc(100vh - 20px);
+    }
+    .cl-modal-close { top: 10px; right: 10px; }
+
+    /* Les boutons pleine largeur évitent les cibles tactiles trop petites */
+    .cl-form button[type="submit"],
+    .btn-cl {
+        width: 100%;
+        justify-content: center;
+    }
+    .cl-nav-right .btn-cl {
+        width: auto;
+    }
 }

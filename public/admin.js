@@ -9,6 +9,11 @@ function escapeHTML(str) {
     return div.innerHTML;
 }
 
+// escapeHTML n'échappe pas les guillemets : indispensable dans un attribut
+function escapeAttr(str) {
+    return escapeHTML(str).replace(/"/g, '&quot;');
+}
+
 function notify(msg, type = 'success') {
     const existing = document.querySelector('.admin-notification');
     if (existing) existing.remove();
@@ -27,7 +32,11 @@ async function apiFetch(url, options = {}) {
     if (res.status === 401) { logout(); throw new Error('Session expirée'); }
     const contentType = res.headers.get('content-type') || '';
     if (!contentType.includes('application/json')) {
-        throw new Error('Le serveur est en cours de démarrage. Veuillez patienter quelques secondes et réessayer.');
+        // L'API répond désormais toujours en JSON (404 et erreurs compris).
+        // Une réponse non-JSON signale donc un serveur injoignable ou en
+        // cours de démarrage, et non une simple erreur de requête.
+        throw new Error(`Réponse inattendue du serveur (HTTP ${res.status}). `
+            + "S'il vient de démarrer, patientez quelques secondes et réessayez.");
     }
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Erreur serveur');
@@ -83,14 +92,32 @@ document.getElementById('btnLogout').addEventListener('click', logout);
 
 // ===== SIDEBAR NAV =====
 const sidebar = document.getElementById('sidebar');
-document.getElementById('sidebarToggle').addEventListener('click', () => sidebar.classList.toggle('open'));
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+function setSidebar(ouvert) {
+    sidebar.classList.toggle('open', ouvert);
+    if (sidebarOverlay) {
+        sidebarOverlay.hidden = !ouvert;
+        sidebarOverlay.classList.toggle('visible', ouvert);
+    }
+    // Empêche le défilement du contenu pendant que le tiroir est ouvert
+    document.body.style.overflow = ouvert ? 'hidden' : '';
+}
+
+document.getElementById('sidebarToggle').addEventListener('click', () => {
+    setSidebar(!sidebar.classList.contains('open'));
+});
+if (sidebarOverlay) sidebarOverlay.addEventListener('click', () => setSidebar(false));
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && sidebar.classList.contains('open')) setSidebar(false);
+});
 
 document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', (e) => {
         e.preventDefault();
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         item.classList.add('active');
-        sidebar.classList.remove('open');
+        setSidebar(false);
         loadSection(item.dataset.section);
     });
 });
@@ -104,7 +131,12 @@ const sectionTitles = {
     formations: 'Formations', evenements: 'Événements', playlists: 'Playlists',
     videos: 'Vidéos', quiz: 'Questions Quiz', pourquoi: 'Pourquoi Nous',
     temoignages: 'Témoignages', equipe: 'Équipe', albums: 'Galerie Photos', cours_pdfs: 'Documents PDF', cours_live: 'Cours Live',
-    inscriptions: 'Inscriptions', membres: 'Membres', messages: 'Messages', scores: 'Scores Quiz'
+    inscriptions: 'Inscriptions', membres: 'Membres', messages: 'Messages', scores: 'Scores Quiz',
+    comptes: 'Comptes Administrateurs',
+    site_textes: 'Textes du site', section_entetes: 'En-têtes de sections',
+    apropos_blocs: 'À Propos — Blocs de texte', apropos_valeurs: 'À Propos — Valeurs',
+    contact_infos: 'Coordonnées', reseaux_sociaux: 'Réseaux sociaux',
+    footer_liens: 'Liens du pied de page', page_seo: 'Référencement des pages'
 };
 
 async function loadSection(section) {
@@ -119,6 +151,8 @@ async function loadSection(section) {
             case 'membres': await renderMembres(); break;
             case 'messages': await renderMessages(); break;
             case 'scores': await renderReadOnly('scores', ['id','playlist_nom','nom','email','score','total','pourcentage','date_passage']); break;
+            case 'comptes': await renderComptes(); break;
+            case 'site_textes': await renderSiteTextes(); break;
             default: await renderCrudSection(section); break;
         }
     } catch (err) {
@@ -144,6 +178,163 @@ async function renderDashboard() {
             <div class="dash-card"><div class="dash-card-icon red"><i class="fas fa-broadcast-tower"></i></div><div class="dash-card-info"><h3>${d.coursLive || 0}</h3><p>Cours Live</p></div></div>
         </div>
     `;
+}
+
+// ===== TEXTES DU SITE (écran sur-mesure) =====
+// Ces textes sont des singletons dispersés (héros, CTA, pied de page…).
+// Un tableau CRUD avec un bouton « Ajouter » n'aurait aucun sens : on les
+// présente groupés, avec un enregistrement par groupe en une seule requête.
+const LIBELLES_GROUPES = {
+    hero: "Bandeau d'accueil",
+    citation: 'Citation du jour',
+    apropos: 'Encart À Propos',
+    cta: "Bloc d'appel à l'action",
+    footer: 'Pied de page'
+};
+
+async function renderSiteTextes() {
+    const textes = await apiFetch('/api/admin/site-textes');
+
+    const groupes = {};
+    textes.forEach(t => { (groupes[t.groupe] = groupes[t.groupe] || []).push(t); });
+
+    content.innerHTML = `
+        <p class="admin-hint">
+            <i class="fas fa-info-circle"></i>
+            Mise en forme disponible dans les textes :
+            <strong>*surligné en doré*</strong> · <strong>**gras**</strong> · <strong>_italique_</strong>.
+            Chaque bloc s'enregistre séparément.
+        </p>
+        ${Object.keys(groupes).map(groupe => `
+            <form class="textes-groupe" data-groupe="${escapeAttr(groupe)}">
+                <h3 class="textes-groupe-titre">
+                    ${escapeHTML(LIBELLES_GROUPES[groupe] || groupe)}
+                </h3>
+                ${groupes[groupe].map(t => `
+                    <div class="form-group">
+                        <label for="texte-${t.id}">${escapeHTML(t.libelle)}</label>
+                        ${t.multiligne
+                            ? `<textarea id="texte-${t.id}" rows="3" data-cle="${escapeAttr(t.cle)}">${escapeHTML(t.valeur || '')}</textarea>`
+                            : `<input type="text" id="texte-${t.id}" data-cle="${escapeAttr(t.cle)}" value="${escapeAttr(t.valeur || '')}">`}
+                        <small class="textes-cle">${escapeHTML(t.cle)}</small>
+                    </div>`).join('')}
+                <button type="submit" class="btn-admin-primary btn-sm">
+                    <i class="fas fa-save"></i> Enregistrer ce bloc
+                </button>
+            </form>`).join('')}`;
+
+    content.querySelectorAll('.textes-groupe').forEach(form => {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const bouton = form.querySelector('button[type="submit"]');
+            const libelleInitial = bouton.innerHTML;
+            bouton.disabled = true;
+            bouton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement...';
+            try {
+                const charge = {};
+                form.querySelectorAll('[data-cle]').forEach(champ => { charge[champ.dataset.cle] = champ.value; });
+                const res = await apiFetch('/api/admin/site-textes', {
+                    method: 'PUT',
+                    body: JSON.stringify({ textes: charge })
+                });
+                notify(`${res.misAJour} texte(s) enregistré(s)`);
+            } catch (err) {
+                notify(err.message, 'error');
+            } finally {
+                bouton.disabled = false;
+                bouton.innerHTML = libelleInitial;
+            }
+        });
+    });
+}
+
+// ===== COMPTES ADMINISTRATEURS =====
+// La table admins n'était pilotable par aucune interface : un seul compte
+// existait, créé au premier démarrage, sans moyen d'en ajouter un autre.
+async function renderComptes() {
+    const comptes = await apiFetch('/api/admin/comptes');
+    content.innerHTML = `
+        <div class="table-header">
+            <h2>Comptes administrateurs (${comptes.length})</h2>
+            <button class="btn-admin-primary btn-sm" id="btnNouveauCompte"><i class="fas fa-plus"></i> Nouveau compte</button>
+        </div>
+        <form id="formCompte" class="compte-form hidden">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="compteUser">Identifiant</label>
+                    <input type="text" id="compteUser" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="comptePass">Mot de passe (6 caractères minimum)</label>
+                    <input type="password" id="comptePass" required minlength="6" autocomplete="new-password">
+                </div>
+            </div>
+            <div class="compte-form-actions">
+                <button type="submit" class="btn-admin-primary btn-sm"><i class="fas fa-check"></i> Créer</button>
+                <button type="button" class="btn-admin-secondary" id="btnAnnulerCompte">Annuler</button>
+            </div>
+        </form>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead><tr><th>ID</th><th>Identifiant</th><th>Créé le</th><th>Actions</th></tr></thead>
+                <tbody>
+                    ${comptes.map(c => `
+                        <tr>
+                            <td data-label="ID">${c.id}</td>
+                            <td data-label="Identifiant"><strong>${escapeHTML(c.username)}</strong></td>
+                            <td data-label="Créé le">${escapeHTML(c.created_at || '')}</td>
+                            <td data-label="Actions" class="actions-cell">
+                                <button class="btn-icon-sm danger btn-suppr-compte" title="Supprimer"
+                                        data-id="${c.id}" data-user="${escapeAttr(c.username)}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>`).join('')}
+                </tbody>
+            </table>
+        </div>
+        <p class="admin-hint">
+            <i class="fas fa-info-circle"></i>
+            Le dernier compte et celui avec lequel vous êtes connecté ne peuvent pas être supprimés.
+            Pour changer votre propre mot de passe, utilisez le bouton dédié en haut de page.
+        </p>`;
+
+    content.querySelectorAll('.btn-suppr-compte').forEach(btn => {
+        btn.addEventListener('click', () => supprimerCompte(Number(btn.dataset.id), btn.dataset.user));
+    });
+
+    const form = document.getElementById('formCompte');
+    document.getElementById('btnNouveauCompte').addEventListener('click', () => {
+        form.classList.remove('hidden');
+        document.getElementById('compteUser').focus();
+    });
+    document.getElementById('btnAnnulerCompte').addEventListener('click', () => {
+        form.classList.add('hidden');
+        form.reset();
+    });
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+            await apiFetch('/api/admin/comptes', {
+                method: 'POST',
+                body: JSON.stringify({
+                    username: document.getElementById('compteUser').value.trim(),
+                    password: document.getElementById('comptePass').value
+                })
+            });
+            notify('Compte créé');
+            loadSection('comptes');
+        } catch (err) { notify(err.message, 'error'); }
+    });
+}
+
+async function supprimerCompte(id, username) {
+    if (!confirm(`Supprimer le compte « ${username} » ?`)) return;
+    try {
+        await apiFetch(`/api/admin/comptes/${id}`, { method: 'DELETE' });
+        notify('Compte supprimé');
+        loadSection('comptes');
+    } catch (err) { notify(err.message, 'error'); }
 }
 
 // ===== CRUD CONFIG =====
@@ -283,7 +474,8 @@ const crudConfig = {
     },
     cours_live: {
         endpoint: '/api/admin/cours-live',
-        columns: ['id', 'titre', 'formateur', 'date_cours', 'heure_debut', 'statut', 'plateforme', 'ordre'],
+        hasImage: true,
+        columns: ['id', 'titre', 'formateur', 'date_cours', 'heure_debut', 'statut', 'plateforme', 'image', 'ordre'],
         fields: [
             { name: 'titre', label: 'Titre du cours', type: 'text', required: true },
             { name: 'description', label: 'Description', type: 'textarea', required: true },
@@ -295,7 +487,92 @@ const crudConfig = {
             { name: 'plateforme', label: 'Plateforme', type: 'select', options: ['Zoom', 'Google Meet', 'Microsoft Teams', 'YouTube Live', 'Autre'] },
             { name: 'statut', label: 'Statut', type: 'select', options: ['planifie', 'en_cours', 'termine'], required: true },
             { name: 'max_participants', label: 'Max participants', type: 'number' },
+            { name: 'image', label: 'Image de couverture', type: 'file', accept: 'image/*' },
             { name: 'ordre', label: 'Ordre', type: 'number' }
+        ]
+    },
+
+    // ===== CONTENU ÉDITORIAL DES PAGES =====
+    // Rappel de la convention de mise en forme, reprise dans chaque aide :
+    //   *texte* surligné en doré · **texte** gras · _texte_ italique
+    section_entetes: {
+        endpoint: '/api/admin/section-entetes',
+        noCreate: true,
+        noDelete: true,
+        aide: 'Liste fixe : ces en-têtes correspondent aux sections du site. '
+            + 'Dans un titre, <strong>*texte*</strong> apparaît surligné en doré.',
+        columns: ['id', 'cle', 'tag', 'titre', 'description', 'ordre'],
+        fields: [
+            { name: 'tag', label: 'Petit libellé au-dessus du titre', type: 'text' },
+            { name: 'titre', label: 'Titre (utilisez *mot* pour surligner)', type: 'text', required: true },
+            { name: 'description', label: 'Phrase de présentation', type: 'textarea' },
+            { name: 'ordre', label: 'Ordre', type: 'number' }
+        ]
+    },
+    apropos_blocs: {
+        endpoint: '/api/admin/apropos-blocs',
+        aide: 'Blocs de texte de la page À Propos. <strong>**gras**</strong>, <strong>_italique_</strong>, <strong>*surligné*</strong>.',
+        columns: ['id', 'titre', 'texte', 'ordre'],
+        fields: [
+            { name: 'titre', label: 'Titre du bloc', type: 'text', required: true },
+            { name: 'texte', label: 'Texte', type: 'textarea', required: true },
+            { name: 'ordre', label: 'Ordre', type: 'number' }
+        ]
+    },
+    apropos_valeurs: {
+        endpoint: '/api/admin/apropos-valeurs',
+        aide: 'Les valeurs affichées en regard du texte À Propos (Guider, Motiver…).',
+        columns: ['id', 'icon', 'titre', 'texte', 'ordre'],
+        fields: [
+            { name: 'icon', label: 'Icône (classe Font Awesome)', type: 'text', required: true, placeholder: 'fas fa-compass' },
+            { name: 'titre', label: 'Intitulé', type: 'text', required: true },
+            { name: 'texte', label: 'Description courte', type: 'text', required: true },
+            { name: 'ordre', label: 'Ordre', type: 'number' }
+        ]
+    },
+    contact_infos: {
+        endpoint: '/api/admin/contact-infos',
+        aide: 'Coordonnées affichées sur la page Contact.',
+        columns: ['id', 'icon', 'label', 'valeur', 'ordre'],
+        fields: [
+            { name: 'icon', label: 'Icône (classe Font Awesome)', type: 'text', required: true, placeholder: 'fas fa-phone' },
+            { name: 'label', label: 'Libellé', type: 'text', required: true, placeholder: 'Téléphone' },
+            { name: 'valeur', label: 'Valeur', type: 'text', required: true },
+            { name: 'ordre', label: 'Ordre', type: 'number' }
+        ]
+    },
+    reseaux_sociaux: {
+        endpoint: '/api/admin/reseaux-sociaux',
+        aide: 'Liens affichés dans le pied de page et sur la page Contact.',
+        columns: ['id', 'icon', 'nom', 'url', 'ordre'],
+        fields: [
+            { name: 'icon', label: 'Icône (classe Font Awesome)', type: 'text', required: true, placeholder: 'fab fa-facebook-f' },
+            { name: 'nom', label: 'Nom du réseau', type: 'text', required: true },
+            { name: 'url', label: 'Adresse du profil', type: 'text', placeholder: 'https://...' },
+            { name: 'ordre', label: 'Ordre', type: 'number' }
+        ]
+    },
+    footer_liens: {
+        endpoint: '/api/admin/footer-liens',
+        aide: 'Liens des deux colonnes du pied de page. Le groupe détermine la colonne.',
+        columns: ['id', 'groupe', 'libelle', 'url', 'ordre'],
+        fields: [
+            { name: 'groupe', label: 'Colonne', type: 'select', options: ['liens', 'formations'], required: true },
+            { name: 'libelle', label: 'Texte du lien', type: 'text', required: true },
+            { name: 'url', label: 'Destination', type: 'text', placeholder: '/formations' },
+            { name: 'ordre', label: 'Ordre', type: 'number' }
+        ]
+    },
+    page_seo: {
+        endpoint: '/api/admin/page-seo',
+        noCreate: true,
+        noDelete: true,
+        aide: 'Liste fixe : une ligne par page du site. Ces textes apparaissent dans '
+            + "l'onglet du navigateur et dans les résultats de recherche.",
+        columns: ['id', 'page', 'titre', 'description'],
+        fields: [
+            { name: 'titre', label: 'Titre de la page', type: 'text', required: true },
+            { name: 'description', label: 'Description (environ 160 caractères)', type: 'textarea' }
         ]
     }
 };
@@ -311,11 +588,15 @@ async function renderCrudSection(section) {
 
     const data = await apiFetch(config.endpoint);
 
+    // Listes fixes : le jeu de lignes appartient aux gabarits du site, l'admin
+    // n'en modifie que le contenu. On masque donc Ajouter et Supprimer plutôt
+    // que de laisser l'utilisateur buter sur un refus du serveur.
     let tableHTML = `
         <div class="table-header">
             <h2>${sectionTitles[section]} (${data.length})</h2>
-            <button class="btn-admin-primary btn-sm" onclick="openCrudModal()"><i class="fas fa-plus"></i> Ajouter</button>
+            ${config.noCreate ? '' : '<button class="btn-admin-primary btn-sm" onclick="openCrudModal()"><i class="fas fa-plus"></i> Ajouter</button>'}
         </div>
+        ${config.aide ? `<p class="admin-hint"><i class="fas fa-info-circle"></i> ${config.aide}</p>` : ''}
         <div class="table-wrapper">
             <table class="data-table">
                 <thead><tr>`;
@@ -336,7 +617,7 @@ async function renderCrudSection(section) {
         });
         tableHTML += `<td class="actions-cell">
             <button class="btn-icon edit" title="Modifier" onclick="openCrudModal(${row.id})"><i class="fas fa-pen"></i></button>
-            <button class="btn-icon delete" title="Supprimer" onclick="openDeleteModal(${row.id})"><i class="fas fa-trash"></i></button>
+            ${config.noDelete ? '' : `<button class="btn-icon delete" title="Supprimer" onclick="openDeleteModal(${row.id})"><i class="fas fa-trash"></i></button>`}
         </td></tr>`;
     });
 
@@ -519,10 +800,10 @@ async function renderHeroSlides() {
                 </td>
                 <td>
                     <div class="hero-action-btns">
-                        <button class="btn-icon-sm primary" title="Monter" onclick="moveHeroSlide(${slide.id}, 'up', ${slide.ordre})" ${idx === 0 ? 'disabled' : ''}>
+                        <button class="btn-icon-sm primary" title="Monter" onclick="moveHeroSlide(${slide.id}, 'up')" ${idx === 0 ? 'disabled' : ''}>
                             <i class="fas fa-arrow-up"></i>
                         </button>
-                        <button class="btn-icon-sm primary" title="Descendre" onclick="moveHeroSlide(${slide.id}, 'down', ${slide.ordre})" ${idx === data.length - 1 ? 'disabled' : ''}>
+                        <button class="btn-icon-sm primary" title="Descendre" onclick="moveHeroSlide(${slide.id}, 'down')" ${idx === data.length - 1 ? 'disabled' : ''}>
                             <i class="fas fa-arrow-down"></i>
                         </button>
                         <button class="btn-icon-sm danger" title="Supprimer" onclick="deleteHeroSlide(${slide.id})">
@@ -541,20 +822,31 @@ async function renderHeroSlides() {
         const files = this.files;
         if (!files.length) return;
         notify('Upload en cours...', 'info');
+        let reussis = 0;
+        const echecs = [];
         for (let i = 0; i < files.length; i++) {
             const fd = new FormData();
             fd.append('image', files[i]);
             fd.append('ordre', data.length + i);
             const token = localStorage.getItem('morec_admin_token');
             try {
-                await fetch('/api/admin/hero-slides', {
+                const res = await fetch('/api/admin/hero-slides', {
                     method: 'POST',
                     headers: { 'Authorization': 'Bearer ' + token },
                     body: fd
                 });
-            } catch (err) { notify('Erreur upload: ' + err.message, 'error'); }
+                // Sans cette vérification, un rejet (type de fichier, taille)
+                // était annoncé comme un succès.
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    echecs.push(`${files[i].name} : ${err.error || 'refusé (' + res.status + ')'}`);
+                } else {
+                    reussis++;
+                }
+            } catch (err) { echecs.push(`${files[i].name} : ${err.message}`); }
         }
-        notify('Image(s) ajoutée(s) avec succès');
+        if (echecs.length) notify(`${reussis} ajoutée(s), ${echecs.length} refusée(s). ${echecs[0]}`, 'error');
+        else notify(`${reussis} image(s) ajoutée(s) avec succès`);
         loadSection('hero_slides');
     });
 }
@@ -576,9 +868,19 @@ async function updateHeroSlideOrder(id, newOrder) {
     } catch (err) { notify(err.message, 'error'); }
 }
 
-async function moveHeroSlide(id, direction, currentOrder) {
-    const newOrder = direction === 'up' ? currentOrder - 1 : currentOrder + 1;
-    await updateHeroSlideOrder(id, newOrder);
+// Permutation avec le voisin, et non « ordre ± 1 » sur une seule ligne :
+// l'ancienne version produisait deux slides de même ordre, donc un tri instable.
+async function moveHeroSlide(id, direction) {
+    try {
+        const slides = await apiFetch('/api/admin/hero-slides');
+        const index = slides.findIndex(s => s.id === id);
+        if (index === -1) return;
+        const voisin = slides[direction === 'up' ? index - 1 : index + 1];
+        if (!voisin) return; // déjà en bout de liste
+        await apiFetch(`/api/admin/hero-slides/${id}/swap/${voisin.id}`, { method: 'PUT' });
+        notify('Ordre mis à jour');
+        loadSection('hero_slides');
+    } catch (err) { notify(err.message, 'error'); }
 }
 
 async function deleteHeroSlide(id) {
@@ -720,6 +1022,7 @@ async function openAlbumPhotos(albumId, albumTitle) {
                 `<div class="admin-photo-card">
                     <img src="${escapeHTML(p.image)}" alt="${escapeHTML(p.legende || '')}">
                     ${p.legende ? `<span class="admin-photo-legende">${escapeHTML(p.legende)}</span>` : ''}
+                    <button class="btn-icon primary admin-photo-edit" title="Modifier la légende" onclick="editAlbumPhotoLegende(${p.id})"><i class="fas fa-pen"></i></button>
                     <button class="btn-icon delete admin-photo-delete" title="Supprimer" onclick="deleteAlbumPhoto(${p.id})"><i class="fas fa-trash"></i></button>
                 </div>`
             ).join('');
@@ -750,6 +1053,23 @@ async function openAlbumPhotos(albumId, albumTitle) {
         notify('Photo(s) ajoutée(s)');
         openAlbumPhotos(albumId, albumTitle);
     });
+}
+
+// La légende d'une photo n'était écrite qu'à l'envoi et n'était plus modifiable,
+// faute de route PUT côté serveur.
+async function editAlbumPhotoLegende(id) {
+    try {
+        const photo = await apiFetch(`/api/admin/album-photos/${id}`);
+        const legende = prompt('Légende de la photo :', photo.legende || '');
+        if (legende === null) return; // annulé
+        await apiFetch(`/api/admin/album-photos/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ legende })
+        });
+        notify('Légende mise à jour');
+        const title = document.getElementById('albumPhotosTitle').textContent.replace('Photos — ', '');
+        openAlbumPhotos(currentAdminAlbumId, title);
+    } catch (err) { notify(err.message, 'error'); }
 }
 
 async function deleteAlbumPhoto(id) {

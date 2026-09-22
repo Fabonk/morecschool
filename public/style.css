@@ -255,6 +255,55 @@ ul {
     width: 100%;
 }
 
+/* ===== Liens de nav réduits à leur icône (desktop) ===== */
+.nav-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-icon .nav-label {
+    display: none;
+}
+
+.nav-icon i {
+    font-size: 1.1rem;
+}
+
+/* Les boutons pleins deviennent ronds */
+.nav-links a.btn-nav.nav-icon {
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border-radius: 50%;
+}
+
+/* Infobulle au survol — ::after est déjà pris par le soulignement */
+.nav-icon::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--gray-900);
+    color: var(--white);
+    font-family: 'Open Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    padding: 6px 11px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 10;
+}
+
+.nav-icon:hover::before {
+    opacity: 1;
+}
+
 .nav-toggle {
     display: none;
     flex-direction: column;
@@ -1814,12 +1863,94 @@ ul {
 
 .btn-membre {
     background: var(--gold) !important;
-    color: var(--dark) !important;
+    color: var(--gray-900) !important;
     border-color: var(--gold) !important;
 }
 
 .btn-membre:hover {
-    background: var(--gold-dark, #C4930F) !important;
+    background: var(--gold-dark) !important;
+}
+
+/* Utilitaire partagé (déjà présent dans admin.css et cours-live.css) */
+.hidden { display: none !important; }
+
+/* ===== Connexion (nav + modal) ===== */
+.btn-login {
+    background: transparent !important;
+    color: var(--gold) !important;
+    border: 1px solid var(--gold) !important;
+}
+
+.btn-login:hover {
+    background: var(--gold) !important;
+    color: var(--white) !important;
+}
+
+/* Le bouton de connexion est ajouré : il garde le doré même sur navbar blanche,
+   sinon la règle .navbar.scrolled .nav-links a.btn-nav le rend blanc sur transparent */
+.navbar.scrolled .nav-links a.btn-nav.btn-login {
+    color: var(--gold) !important;
+}
+
+.navbar.scrolled .nav-links a.btn-nav.btn-login:hover {
+    color: var(--white) !important;
+}
+
+.nav-auth .nav-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-logout {
+    background: transparent;
+    border: 1px solid var(--gray-200);
+    color: var(--gray-600);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.nav-logout:hover {
+    background: #c0392b;
+    border-color: #c0392b;
+    color: var(--white);
+}
+
+.modal-icon.login {
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    color: var(--white);
+}
+
+.modal-login .form-group {
+    margin-bottom: 16px;
+}
+
+.login-error-msg {
+    background: rgba(192, 57, 43, 0.08);
+    border-left: 3px solid #c0392b;
+    color: #c0392b;
+    font-size: 0.85rem;
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+}
+
+.login-hint {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--gray-600);
+    margin-top: 16px;
+}
+
+.login-hint a {
+    color: var(--gold);
+    font-weight: 600;
 }
 
 /* ===== PDF Cards ===== */
@@ -2587,6 +2718,39 @@ ul {
     max-width: 80%;
 }
 
+/* ============================================================
+   TEXTE JUSTIFIÉ
+   Appliqué aux blocs de prose. La citation du jour
+   (.citation-card) reste centrée et n'est pas ciblée ici.
+   ============================================================ */
+.hero-subtitle,
+.section-desc,
+.apropos-text p,
+.formation-card > p,
+.event-content > p,
+.pourquoi-card > p,
+.temoignage-card > p,
+.equipe-card > p,
+.pdf-info > p,
+.cta-section p,
+.footer-about p,
+.footer-newsletter p,
+.modal-desc {
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+}
+
+/* La dernière ligne d'un bloc centré resterait collée à gauche :
+   on recentre ces blocs-là tout en gardant les lignes justifiées */
+.section-desc,
+.equipe-card > p,
+.pdf-info > p,
+.cta-section p,
+.modal-desc {
+    text-align-last: center;
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1024px) {
     .formations-grid,
@@ -2658,6 +2822,41 @@ ul {
         margin-top: 10px;
         text-align: center;
         border-bottom: none;
+    }
+
+    /* Dans le menu latéral, les icônes reprennent leur libellé */
+    .nav-icon {
+        justify-content: flex-start;
+    }
+
+    .nav-icon .nav-label {
+        display: inline;
+    }
+
+    .nav-icon i {
+        width: 24px;
+        text-align: center;
+        margin-right: 10px;
+        color: var(--gold);
+    }
+
+    .nav-links a.btn-nav.nav-icon {
+        width: 100%;
+        height: auto;
+        padding: 12px 20px;
+        border-radius: 50px;
+        justify-content: center;
+    }
+
+    .nav-links a.btn-nav.nav-icon i {
+        color: inherit;
+        width: auto;
+        margin-right: 8px;
+    }
+
+    /* Pas d'infobulle au tactile */
+    .nav-icon::before {
+        display: none;
     }
 
     .nav-toggle.active span:nth-child(1) {

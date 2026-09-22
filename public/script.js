@@ -8,6 +8,11 @@ function escapeHTML(str) {
     return div.innerHTML;
 }
 
+// escapeHTML n'échappe pas les guillemets : indispensable dans un attribut
+function escapeAttr(str) {
+    return escapeHTML(str).replace(/"/g, '&quot;');
+}
+
 function showNotification(message, type) {
     const existing = document.querySelector('.notification');
     if (existing) existing.remove();
@@ -1150,6 +1155,199 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ============================================================
+//  CONNEXION — Membre ou Admin (détection automatique)
+// ============================================================
+
+const MEMBER_TOKEN_KEY = 'morec_member_token';
+const MEMBER_DATA_KEY = 'morec_member_data';
+const ADMIN_TOKEN_KEY = 'morec_admin_token';
+
+function getSession() {
+    const adminToken = localStorage.getItem(ADMIN_TOKEN_KEY);
+    if (adminToken) return { role: 'admin', token: adminToken, espace: '/admin' };
+
+    const memberToken = localStorage.getItem(MEMBER_TOKEN_KEY);
+    if (memberToken) {
+        let membre = null;
+        try { membre = JSON.parse(localStorage.getItem(MEMBER_DATA_KEY) || 'null'); } catch (e) { membre = null; }
+        return { role: 'membre', token: memberToken, membre, espace: '/cours-live' };
+    }
+    return null;
+}
+
+function clearSession() {
+    localStorage.removeItem(ADMIN_TOKEN_KEY);
+    localStorage.removeItem(MEMBER_TOKEN_KEY);
+    localStorage.removeItem(MEMBER_DATA_KEY);
+}
+
+function renderNavAuth() {
+    const container = document.getElementById('navAuth');
+    if (!container) return;
+
+    const session = getSession();
+    if (!session) {
+        container.innerHTML = `
+            <a href="#" class="btn-nav btn-login nav-icon" id="btnSeConnecter" data-tooltip="Se connecter" aria-label="Se connecter">
+                <i class="fas fa-sign-in-alt"></i><span class="nav-label">Se connecter</span>
+            </a>`;
+        return;
+    }
+
+    const label = session.role === 'admin'
+        ? 'Admin'
+        : (session.membre?.prenom || 'Mon espace');
+
+    container.innerHTML = `
+        <div class="nav-user">
+            <a href="${session.espace}" class="btn-nav btn-login nav-icon" data-tooltip="Mon espace — ${escapeAttr(label)}" aria-label="Mon espace — ${escapeAttr(label)}">
+                <i class="fas fa-user-circle"></i><span class="nav-label">${escapeHTML(label)}</span>
+            </a>
+            <button class="nav-logout" id="btnLogout" title="Se déconnecter" aria-label="Se déconnecter">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>`;
+}
+
+// Vérifie que le token stocké est toujours valide (il expire : 8h admin, 24h membre)
+async function validateSession() {
+    const session = getSession();
+    if (!session) return;
+
+    const url = session.role === 'admin' ? `${API}/api/auth/me` : `${API}/api/membres/me`;
+    try {
+        const res = await fetch(url, { headers: { 'Authorization': `Bearer ${session.token}` } });
+        if (res.status === 401 || res.status === 403) {
+            clearSession();
+            renderNavAuth();
+        }
+    } catch (e) {
+        // Hors ligne ou serveur injoignable : on garde la session telle quelle
+    }
+}
+
+async function tentativeLogin(endpoint, payload) {
+    const res = await fetch(`${API}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+    if (!res.ok) return null;
+    return await res.json();
+}
+
+function initLoginModal() {
+    const modal = document.getElementById('modalLogin');
+    const form = document.getElementById('formLogin');
+    const errorEl = document.getElementById('loginErrorMsg');
+    const submitBtn = document.getElementById('btnSubmitLogin');
+    const closeBtn = document.getElementById('closeModalLogin');
+    if (!modal || !form) return;
+
+    function openModal() {
+        errorEl.classList.add('hidden');
+        modal.classList.add('active');
+        document.getElementById('loginIdentifiant').focus();
+    }
+
+    function closeModal() {
+        modal.classList.remove('active');
+        form.reset();
+        errorEl.classList.add('hidden');
+    }
+
+    // Délégation : la zone #navAuth est re-rendue selon l'état de connexion
+    document.addEventListener('click', (e) => {
+        const loginBtn = e.target.closest('#btnSeConnecter');
+        if (loginBtn) {
+            e.preventDefault();
+            openModal();
+            return;
+        }
+        const logoutBtn = e.target.closest('#btnLogout');
+        if (logoutBtn) {
+            e.preventDefault();
+            clearSession();
+            renderNavAuth();
+            showNotification('Vous êtes déconnecté.', 'success');
+        }
+    });
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
+    });
+
+    // Renvoie vers le formulaire d'inscription
+    const lienInscription = document.getElementById('linkVersInscription');
+    if (lienInscription) {
+        lienInscription.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeModal();
+            document.getElementById('modalMembre').classList.add('active');
+        });
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const identifiant = document.getElementById('loginIdentifiant').value.trim();
+        const password = document.getElementById('loginMotDePasse').value;
+        if (!identifiant || !password) return;
+
+        errorEl.classList.add('hidden');
+        const labelInitial = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connexion...';
+
+        // Un email pointe vers un membre, un identifiant simple vers l'admin.
+        // On tente l'autre endpoint en secours si le premier refuse.
+        const essais = identifiant.includes('@')
+            ? [
+                { endpoint: '/api/membres/login', payload: { email: identifiant, password }, role: 'membre' },
+                { endpoint: '/api/auth/login', payload: { username: identifiant, password }, role: 'admin' }
+            ]
+            : [
+                { endpoint: '/api/auth/login', payload: { username: identifiant, password }, role: 'admin' },
+                { endpoint: '/api/membres/login', payload: { email: identifiant, password }, role: 'membre' }
+            ];
+
+        try {
+            let resultat = null;
+            for (const essai of essais) {
+                const data = await tentativeLogin(essai.endpoint, essai.payload);
+                if (data && data.token) {
+                    resultat = { role: essai.role, data };
+                    break;
+                }
+            }
+
+            if (!resultat) {
+                errorEl.textContent = 'Identifiants incorrects. Vérifiez votre email et votre mot de passe.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            if (resultat.role === 'admin') {
+                localStorage.setItem(ADMIN_TOKEN_KEY, resultat.data.token);
+                window.location.href = '/admin';
+            } else {
+                localStorage.setItem(MEMBER_TOKEN_KEY, resultat.data.token);
+                localStorage.setItem(MEMBER_DATA_KEY, JSON.stringify(resultat.data.membre));
+                window.location.href = '/cours-live';
+            }
+        } catch (err) {
+            console.error('Erreur de connexion:', err);
+            errorEl.textContent = 'Connexion au serveur impossible. Réessayez dans un instant.';
+            errorEl.classList.remove('hidden');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = labelInitial;
+        }
+    });
+}
+
+// ============================================================
 //  INIT — Load all data from API
 // ============================================================
 
@@ -1176,4 +1374,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initContactForm();
     initMembreModal();
     initGalerieModals();
+    initLoginModal();
+    renderNavAuth();
+    validateSession();
 });

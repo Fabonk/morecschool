@@ -3,10 +3,16 @@ const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
 
-const dataDir = path.join(__dirname, 'data');
-if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
+// En production, la base doit vivre sur un disque persistant monté par
+// l'hébergeur (DATA_DIR), et non dans le dossier du code : celui-ci est
+// recréé à chaque déploiement, ce qui effacerait toutes les données saisies
+// depuis le panneau d'administration.
+const dataDir = process.env.DATA_DIR || path.join(__dirname, 'data');
+if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
-const db = new Database(path.join(dataDir, 'morec.db'));
+const dbPath = path.join(dataDir, 'morec.db');
+console.log(`Base de données : ${dbPath}`);
+const db = new Database(dbPath);
 
 // Enable WAL mode for better performance
 db.pragma('journal_mode = WAL');
@@ -69,7 +75,7 @@ db.exec(`
         telephone TEXT NOT NULL,
         organisation TEXT,
         date_inscription DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (evenement_id) REFERENCES evenements(id)
+        FOREIGN KEY (evenement_id) REFERENCES evenements(id) ON DELETE SET NULL
     );
 
     CREATE TABLE IF NOT EXISTS playlists (
@@ -117,7 +123,7 @@ db.exec(`
         total INTEGER NOT NULL,
         pourcentage INTEGER NOT NULL,
         date_passage DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (playlist_id) REFERENCES playlists(id)
+        FOREIGN KEY (playlist_id) REFERENCES playlists(id) ON DELETE SET NULL
     );
 
     CREATE TABLE IF NOT EXISTS pourquoi (
@@ -198,7 +204,7 @@ db.exec(`
         formation_id INTEGER,
         ordre INTEGER DEFAULT 0,
         date_ajout DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (formation_id) REFERENCES formations(id)
+        FOREIGN KEY (formation_id) REFERENCES formations(id) ON DELETE SET NULL
     );
 
     CREATE TABLE IF NOT EXISTS hero_slides (
@@ -232,6 +238,157 @@ try {
 } catch (e) {
     db.exec("ALTER TABLE membres ADD COLUMN password TEXT");
 }
+
+// ===== MIGRATION : ON DELETE SET NULL sur trois clés étrangères =====
+// Sans clause ON DELETE, supprimer une playlist qui a des scores, ou une
+// formation rattachée à un PDF, échouait sur SQLITE_CONSTRAINT_FOREIGNKEY.
+// Un score ou une inscription est une archive : on détache la référence
+// plutôt que de refuser la suppression ou de perdre la ligne.
+// SQLite ne sait pas modifier une contrainte : il faut recréer la table.
+function migrerCleEtrangere(table, definition, colonnes) {
+    const actuel = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name = ?").get(table);
+    if (!actuel || /ON DELETE SET NULL/i.test(actuel.sql)) return false;
+
+    db.pragma('foreign_keys = OFF');
+    try {
+        db.transaction(() => {
+            db.exec(`CREATE TABLE ${table}__nouveau (${definition})`);
+            db.exec(`INSERT INTO ${table}__nouveau (${colonnes}) SELECT ${colonnes} FROM ${table}`);
+            db.exec(`DROP TABLE ${table}`);
+            db.exec(`ALTER TABLE ${table}__nouveau RENAME TO ${table}`);
+        })();
+    } finally {
+        db.pragma('foreign_keys = ON');
+    }
+    console.log(`Migration : ${table} — ON DELETE SET NULL appliqué.`);
+    return true;
+}
+
+migrerCleEtrangere('inscriptions', `
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    evenement_id INTEGER,
+    evenement_nom TEXT NOT NULL,
+    nom TEXT NOT NULL,
+    email TEXT NOT NULL,
+    telephone TEXT NOT NULL,
+    organisation TEXT,
+    date_inscription DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (evenement_id) REFERENCES evenements(id) ON DELETE SET NULL
+`, 'id, evenement_id, evenement_nom, nom, email, telephone, organisation, date_inscription');
+
+migrerCleEtrangere('scores_quiz', `
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    playlist_id INTEGER,
+    playlist_nom TEXT NOT NULL,
+    nom TEXT NOT NULL,
+    email TEXT NOT NULL,
+    score INTEGER NOT NULL,
+    total INTEGER NOT NULL,
+    pourcentage INTEGER NOT NULL,
+    date_passage DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (playlist_id) REFERENCES playlists(id) ON DELETE SET NULL
+`, 'id, playlist_id, playlist_nom, nom, email, score, total, pourcentage, date_passage');
+
+migrerCleEtrangere('cours_pdfs', `
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    titre TEXT NOT NULL,
+    description TEXT,
+    categorie TEXT DEFAULT 'general',
+    fichier_url TEXT NOT NULL,
+    fichier_nom TEXT,
+    taille TEXT,
+    formation_id INTEGER,
+    ordre INTEGER DEFAULT 0,
+    date_ajout DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (formation_id) REFERENCES formations(id) ON DELETE SET NULL
+`, 'id, titre, description, categorie, fichier_url, fichier_nom, taille, formation_id, ordre, date_ajout');
+
+// ============================================================
+//  CONTENU ÉDITORIAL DES PAGES
+//  Ces tables remplacent les textes jusqu'ici écrits en dur dans
+//  public/index.html, afin que l'admin puisse tout modifier.
+//
+//  Convention de mise en forme (aucun HTML n'est stocké en base) :
+//    *texte*    -> surligné en doré (span.highlight)
+//    **texte**  -> gras
+//    _texte_    -> italique
+//  La conversion est faite à l'affichage par formatTexte().
+// ============================================================
+db.exec(`
+    -- Textes uniques et dispersés (héros, CTA, footer…). Regroupés par
+    -- « groupe » pour l'affichage dans l'admin, et identifiés par une clé
+    -- stable que les gabarits appellent directement.
+    CREATE TABLE IF NOT EXISTS site_textes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        cle TEXT UNIQUE NOT NULL,
+        valeur TEXT,
+        groupe TEXT NOT NULL DEFAULT 'general',
+        libelle TEXT NOT NULL,
+        multiligne INTEGER DEFAULT 0,
+        ordre INTEGER DEFAULT 0
+    );
+
+    -- En-têtes de section : le jeu de lignes appartient aux gabarits,
+    -- l'admin en modifie le contenu mais n'en ajoute ni n'en supprime.
+    CREATE TABLE IF NOT EXISTS section_entetes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        cle TEXT UNIQUE NOT NULL,
+        tag TEXT,
+        titre TEXT NOT NULL,
+        description TEXT,
+        ordre INTEGER DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS apropos_blocs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        titre TEXT NOT NULL,
+        texte TEXT NOT NULL,
+        ordre INTEGER DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS apropos_valeurs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        icon TEXT NOT NULL,
+        titre TEXT NOT NULL,
+        texte TEXT NOT NULL,
+        ordre INTEGER DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS contact_infos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        icon TEXT NOT NULL,
+        label TEXT NOT NULL,
+        valeur TEXT NOT NULL,
+        ordre INTEGER DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS reseaux_sociaux (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        icon TEXT NOT NULL,
+        nom TEXT NOT NULL,
+        url TEXT NOT NULL DEFAULT '#',
+        ordre INTEGER DEFAULT 0
+    );
+
+    -- Une seule table avec une colonne « groupe » plutôt qu'une paire
+    -- footer_colonnes + footer_liens : cela éviterait à l'admin de saisir
+    -- un identifiant de colonne à la main.
+    CREATE TABLE IF NOT EXISTS footer_liens (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        groupe TEXT NOT NULL DEFAULT 'liens',
+        libelle TEXT NOT NULL,
+        url TEXT NOT NULL DEFAULT '#',
+        ordre INTEGER DEFAULT 0
+    );
+
+    -- Référencement par page (exploité au découpage multipage)
+    CREATE TABLE IF NOT EXISTS page_seo (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        page TEXT UNIQUE NOT NULL,
+        titre TEXT NOT NULL,
+        description TEXT
+    );
+`);
 
 // ===== SEED DATA =====
 function seedIfEmpty() {
@@ -378,6 +535,158 @@ function seedIfEmpty() {
         ins.run('Introduction au Leadership', 'Les fondamentaux du leadership selon le modèle MOREC.', 'leadership', '#', 'intro-leadership.pdf', '2.4 MB', 1);
         ins.run('Guide du Management Stratégique', 'Manuel complet sur les techniques de management stratégique.', 'management', '#', 'management-strategique.pdf', '3.1 MB', 2);
         ins.run('Développement Personnel - Workbook', 'Exercices pratiques pour votre développement personnel.', 'developpement', '#', 'workbook-dev-perso.pdf', '1.8 MB', 3);
+    }
+
+    seedContenuEditorial();
+}
+
+// ===== SEED DU CONTENU ÉDITORIAL =====
+// Reprend littéralement les textes de l'ancien public/index.html, pour qu'aucun
+// contenu ne soit perdu au passage en base. Chaque bloc ne s'exécute que si sa
+// table est vide : les modifications faites depuis l'admin ne sont jamais écrasées.
+function seedContenuEditorial() {
+    const vide = (t) => db.prepare(`SELECT COUNT(*) as c FROM ${t}`).get().c === 0;
+
+    if (vide('site_textes')) {
+        const ins = db.prepare(
+            'INSERT INTO site_textes (cle, valeur, groupe, libelle, multiligne, ordre) VALUES (?,?,?,?,?,?)'
+        );
+        // Héros de la page d'accueil
+        ins.run('hero.badge', 'Guider • Motiver • Inspirer', 'hero', 'Badge au-dessus du titre', 0, 1);
+        ins.run('hero.titre', "Formez-vous au *Leadership* d'Impact", 'hero', 'Titre principal', 0, 2);
+        ins.run('hero.sous_titre',
+            "**MOREC Structure** porte une vision : impacter tous ceux qui ont le mandat d'influencer les autres. "
+            + "À travers **MOREC School**, sa filiale pédagogique, cette vision se déploie en leadership, management "
+            + "et développement personnel.",
+            'hero', 'Paragraphe d\'introduction', 1, 3);
+        ins.run('hero.bouton1_texte', 'Découvrir MOREC School', 'hero', 'Bouton principal — texte', 0, 4);
+        ins.run('hero.bouton1_lien', '/formations', 'hero', 'Bouton principal — lien', 0, 5);
+        ins.run('hero.bouton2_texte', 'Notre vision', 'hero', 'Bouton secondaire — texte', 0, 6);
+        ins.run('hero.bouton2_lien', '/a-propos', 'hero', 'Bouton secondaire — lien', 0, 7);
+
+        // Citation du jour
+        ins.run('citation.badge', 'Citation du jour', 'citation', 'Libellé du badge', 0, 1);
+
+        // Encart chiffré de la section À Propos
+        ins.run('apropos.badge_nombre', '10+', 'apropos', 'Chiffre de l\'encart', 0, 1);
+        ins.run('apropos.badge_texte', "Années d'excellence", 'apropos', 'Légende de l\'encart', 0, 2);
+
+        // Bloc d'appel à l'action
+        ins.run('cta.titre', 'Prêt à développer votre leadership ?', 'cta', 'Titre', 0, 1);
+        ins.run('cta.texte',
+            "Rejoignez la communauté de leaders formés par MOREC School et transformez votre impact. "
+            + "_Guider, Motiver, Inspirer._",
+            'cta', 'Paragraphe', 1, 2);
+        ins.run('cta.bouton_texte', 'Rejoindre MOREC School', 'cta', 'Bouton — texte', 0, 3);
+        ins.run('cta.bouton_lien', '/contact', 'cta', 'Bouton — lien', 0, 4);
+
+        // Pied de page
+        ins.run('footer.a_propos',
+            "**MOREC Structure** — Cadre stratégique de transformation des leaders d'impact. "
+            + "**MOREC School** — Former, équiper et accompagner. _Guider, Motiver, Inspirer._",
+            'footer', 'Texte de présentation', 1, 1);
+        ins.run('footer.col1_titre', 'Liens rapides', 'footer', 'Titre de la 1re colonne', 0, 2);
+        ins.run('footer.col2_titre', 'Formations', 'footer', 'Titre de la 2e colonne', 0, 3);
+        ins.run('footer.newsletter_titre', 'Newsletter', 'footer', 'Titre de la newsletter', 0, 4);
+        ins.run('footer.newsletter_texte', 'Recevez nos actualités et offres de formation.', 'footer', 'Texte de la newsletter', 0, 5);
+        ins.run('footer.copyright', '© 2026 MOREC Structure & MOREC School. Tous droits réservés.', 'footer', 'Mention de copyright', 0, 6);
+    }
+
+    if (vide('section_entetes')) {
+        const ins = db.prepare('INSERT INTO section_entetes (cle, tag, titre, description, ordre) VALUES (?,?,?,?,?)');
+        ins.run('apropos', 'Qui sommes-nous', 'À Propos de *MOREC*', null, 1);
+        ins.run('formations', 'MOREC School', 'Nos *Formations*',
+            'À travers MOREC School, des programmes conçus pour développer vos compétences en leadership, management et développement personnel.', 2);
+        ins.run('evenements', 'Nos Événements', 'Événements & *Actualités*',
+            'Découvrez nos prochains événements : formations, conférences, sessions de coaching et masterclass.', 3);
+        ins.run('cours', 'Nos Cours', 'Cours & *Vidéos*',
+            'Suivez nos playlists thématiques et testez vos connaissances avec les évaluations intégrées.', 4);
+        ins.run('cours_pdfs', 'Ressources', 'Documents *PDF*',
+            'Téléchargez les supports de cours au format PDF pour approfondir vos connaissances.', 5);
+        ins.run('cours_live', 'En direct', 'Cours *Live*',
+            'Participez à nos sessions de formation en direct. Espace réservé aux membres inscrits.', 6);
+        ins.run('galerie', 'Nos Photos', 'Galerie *Photos*',
+            "Revivez les moments forts de nos événements à travers nos albums photos.", 7);
+        ins.run('pourquoi', 'Nos Avantages', 'Pourquoi choisir *MOREC School* ?', null, 8);
+        ins.run('temoignages', 'Témoignages', 'Ce que disent nos *Apprenants*', null, 9);
+        ins.run('equipe', 'Notre Équipe', 'Nos *Formateurs*',
+            'Des experts passionnés au service de votre développement.', 10);
+        ins.run('contact', 'Contact', 'Contactez-*nous*',
+            "Une question ? N'hésitez pas à nous écrire. Notre équipe vous répondra dans les plus brefs délais.", 11);
+    }
+
+    if (vide('apropos_blocs')) {
+        const ins = db.prepare('INSERT INTO apropos_blocs (titre, texte, ordre) VALUES (?,?,?)');
+        ins.run('MOREC Structure — La vision',
+            "**MOREC Structure** est la structure mère. Elle porte une vision globale : _impacter tous ceux qui ont "
+            + "le mandat d'influencer les autres_, quels que soient leur domaine d'intervention, leur responsabilité "
+            + "ou leur sphère d'influence. MOREC Structure se positionne comme un cadre stratégique de transformation, "
+            + "de formation et d'inspiration des leaders d'impact selon le modèle de Christ.", 1);
+        ins.run('MOREC School — La mission',
+            "**MOREC School** est la filiale pédagogique et opérationnelle de MOREC Structure. Elle a pour mission de "
+            + "_former, équiper et accompagner_ des leaders capables d'influencer positivement leur communauté, leurs "
+            + "organisations et la société, en restant fidèles aux valeurs d'excellence, d'intégrité et de service. "
+            + "La vision se déploie à travers trois axes majeurs : le leadership, le management et le développement personnel.", 2);
+    }
+
+    if (vide('apropos_valeurs')) {
+        const ins = db.prepare('INSERT INTO apropos_valeurs (icon, titre, texte, ordre) VALUES (?,?,?,?)');
+        ins.run('fas fa-compass', 'Guider', 'Montrer la voie aux leaders de demain', 1);
+        ins.run('fas fa-bolt', 'Motiver', "Inspirer l'action et l'engagement", 2);
+        ins.run('fas fa-star', 'Inspirer', "Transformer les vies par l'exemple", 3);
+        ins.run('fas fa-hands-helping', 'Excellence & Intégrité', 'Des valeurs au cœur de notre action', 4);
+    }
+
+    if (vide('contact_infos')) {
+        const ins = db.prepare('INSERT INTO contact_infos (icon, label, valeur, ordre) VALUES (?,?,?,?)');
+        ins.run('fas fa-map-marker-alt', 'Adresse', "Abidjan, Côte d'Ivoire", 1);
+        ins.run('fas fa-phone', 'Téléphone', '+225 XX XX XX XX XX', 2);
+        ins.run('fas fa-envelope', 'Email', 'contact@morecstructure.com', 3);
+        ins.run('fas fa-clock', 'Horaires', 'Lun - Ven : 08h00 - 18h00', 4);
+    }
+
+    if (vide('reseaux_sociaux')) {
+        const ins = db.prepare('INSERT INTO reseaux_sociaux (icon, nom, url, ordre) VALUES (?,?,?,?)');
+        ins.run('fab fa-facebook-f', 'Facebook', '#', 1);
+        ins.run('fab fa-whatsapp', 'WhatsApp', '#', 2);
+        ins.run('fab fa-instagram', 'Instagram', '#', 3);
+        ins.run('fab fa-youtube', 'YouTube', '#', 4);
+    }
+
+    if (vide('footer_liens')) {
+        const ins = db.prepare('INSERT INTO footer_liens (groupe, libelle, url, ordre) VALUES (?,?,?,?)');
+        // Colonne 1 — liens rapides (URL de pages, prêtes pour le multipage)
+        ins.run('liens', 'Accueil', '/', 1);
+        ins.run('liens', 'À Propos', '/a-propos', 2);
+        ins.run('liens', 'Formations', '/formations', 3);
+        ins.run('liens', 'Témoignages', '/temoignages', 4);
+        ins.run('liens', 'Contact', '/contact', 5);
+        // Colonne 2 — formations
+        ins.run('formations', 'Leadership Fondamental', '/formations', 1);
+        ins.run('formations', 'Leadership Stratégique', '/formations', 2);
+        ins.run('formations', 'Management', '/formations', 3);
+        ins.run('formations', 'Développement Personnel', '/formations', 4);
+        ins.run('formations', 'Leadership Spirituel', '/formations', 5);
+    }
+
+    if (vide('page_seo')) {
+        const ins = db.prepare('INSERT INTO page_seo (page, titre, description) VALUES (?,?,?)');
+        ins.run('accueil', 'MOREC Structure & MOREC School — Leadership d\'Impact',
+            "Formez-vous au leadership d'impact avec MOREC School : leadership, management et développement personnel.");
+        ins.run('a-propos', 'À Propos — MOREC Structure & MOREC School',
+            'La vision de MOREC Structure, la mission de MOREC School et notre équipe de formateurs.');
+        ins.run('formations', 'Nos Formations — MOREC School',
+            'Des programmes conçus pour développer vos compétences en leadership, management et développement personnel.');
+        ins.run('evenements', 'Événements & Actualités — MOREC School',
+            'Formations, conférences, sessions de coaching et masterclass à venir.');
+        ins.run('cours', 'Cours & Vidéos — MOREC School',
+            'Playlists thématiques, documents PDF et cours live pour approfondir vos connaissances.');
+        ins.run('galerie', 'Galerie Photos — MOREC School',
+            "Revivez les moments forts de nos événements à travers nos albums photos.");
+        ins.run('temoignages', 'Témoignages — MOREC School',
+            'Ce que disent les apprenants formés par MOREC School.');
+        ins.run('contact', 'Contact — MOREC Structure & MOREC School',
+            'Écrivez-nous : notre équipe vous répond dans les plus brefs délais.');
     }
 }
 
