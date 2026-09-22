@@ -2751,6 +2751,39 @@ ul {
     text-align-last: center;
 }
 
+
+/* ============================================================
+   PAGES INTERNES (découpage multipage)
+   ============================================================ */
+
+/* La barre de navigation est fixed et transparente tant que .scrolled est
+   absent. Sur les pages sans héros elle est rendue opaque dès le départ :
+   il faut donc réserver sa hauteur, sinon la première section passe dessous. */
+body.page-interne {
+    padding-top: 78px;
+}
+
+/* Lien de la page courante : réutilise le soulignement doré déjà défini */
+.nav-links a.active::after {
+    width: 100%;
+}
+
+.nav-links a.btn-nav.active {
+    box-shadow: var(--shadow-gold);
+}
+
+/* Bouton « Voir tout » sous une section limitée (aperçus de l'accueil) */
+.section-cta {
+    text-align: center;
+    margin-top: 40px;
+}
+
+@media (max-width: 768px) {
+    body.page-interne {
+        padding-top: 68px;
+    }
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1024px) {
     .formations-grid,

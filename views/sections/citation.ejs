@@ -1,0 +1,10 @@
+<section class="citation-section" id="citation">
+    <div class="container">
+        <div class="citation-card" id="citationCard">
+            <div class="citation-icon"><i class="fas fa-quote-left"></i></div>
+            <blockquote id="citationTexte"><%= citation ? citation.texte : '' %></blockquote>
+            <cite id="citationAuteur"><%= citation ? '— ' + citation.auteur : '' %></cite>
+            <span class="citation-badge"><i class="fas fa-sun"></i> <%= contenu.textes['citation.badge'] %></span>
+        </div>
+    </div>
+</section>

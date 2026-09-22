@@ -1,0 +1,98 @@
+<section class="section cours" id="cours">
+    <div class="container">
+        <%- include('_entete', { cle: 'cours' }) %>
+        <div class="playlists-container" id="playlistsContainer">
+            <% playlists.forEach(function (pl) { %>
+                <div class="playlist-block" id="playlist-<%= pl.slug %>">
+                    <div class="playlist-header">
+                        <div class="playlist-info">
+                            <span class="playlist-icon <%= pl.icon_class || '' %>"><i class="<%= pl.icon %>"></i></span>
+                            <div>
+                                <h3><%= pl.nom %></h3>
+                                <span class="playlist-count"><%= pl.videos.length %> vidéos &bull; <%= pl.duree_totale %> &bull; <%= pl.formateur %></span>
+                            </div>
+                        </div>
+                        <div class="playlist-actions">
+                            <div class="playlist-progress">
+                                <div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
+                                <span class="progress-text">0/<%= pl.videos.length %> vus</span>
+                            </div>
+                            <button class="btn btn-eval" data-playlist="<%= pl.slug %>" data-playlist-id="<%= pl.id %>" disabled>
+                                <i class="fas fa-clipboard-check"></i> Évaluation
+                            </button>
+                        </div>
+                    </div>
+                    <div class="playlist-videos">
+                        <% pl.videos.forEach(function (v, idx) { %>
+                            <div class="video-item" data-playlist="<%= pl.slug %>" data-index="<%= idx %>" data-playlist-id="<%= pl.id %>">
+                                <div class="video-thumb">
+                                    <div class="video-placeholder"><i class="fas fa-play-circle"></i></div>
+                                    <span class="cours-duration"><i class="fas fa-clock"></i> <%= v.duree %></span>
+                                </div>
+                                <div class="video-info">
+                                    <span class="video-number"><%= String(idx + 1).padStart(2, '0') %></span>
+                                    <div>
+                                        <h4><%= v.titre %></h4>
+                                        <p><%= v.description %></p>
+                                        <div class="video-stats"><span><i class="fas fa-eye"></i> <%= v.vues %> vues</span></div>
+                                    </div>
+                                </div>
+                                <button class="btn-watch" title="Regarder"><i class="fas fa-play"></i></button>
+                            </div>
+                        <% }); %>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+
+        <%- include('_entete', { cle: 'cours_pdfs', style: 'margin-top:60px;' }) %>
+        <div class="cours-pdfs-grid" id="coursPdfsGrid">
+            <% if (!coursPdfs.length) { %>
+                <p style="text-align:center;color:#888;padding:20px;">Aucun document PDF disponible pour le moment.</p>
+            <% } %>
+            <% coursPdfs.forEach(function (pdf) { %>
+                <div class="pdf-card">
+                    <div class="pdf-icon"><i class="fas fa-file-pdf"></i></div>
+                    <div class="pdf-info">
+                        <span class="pdf-categorie"><i class="<%= pdf.catIcon %>"></i> <%= pdf.catLabel %></span>
+                        <h4><%= pdf.titre %></h4>
+                        <% if (pdf.description) { %><p><%= pdf.description %></p><% } %>
+                        <div class="pdf-meta">
+                            <% if (pdf.fichier_nom) { %><span><i class="fas fa-file"></i> <%= pdf.fichier_nom %></span><% } %>
+                            <% if (pdf.taille) { %><span><i class="fas fa-weight-hanging"></i> <%= pdf.taille %></span><% } %>
+                        </div>
+                    </div>
+                    <a href="<%= pdf.fichier_url %>" target="_blank" rel="noopener" class="btn btn-secondary btn-sm pdf-download" title="Télécharger">
+                        <i class="fas fa-download"></i> Télécharger
+                    </a>
+                </div>
+            <% }); %>
+        </div>
+
+        <%- include('_entete', { cle: 'cours_live', style: 'margin-top:60px;' }) %>
+        <div id="coursLivePreview">
+            <% if (!coursLive.length) { %>
+                <p style="text-align:center;color:#888;padding:20px;">Aucun cours live prévu pour le moment.</p>
+            <% } else { %>
+                <div class="cours-live-cards">
+                    <% coursLive.forEach(function (c) { %>
+                        <div class="cours-live-card-preview">
+                            <div class="clp-status <%= c.statutClasse %>"><%= c.statutLabel %></div>
+                            <h4><%= c.titre %></h4>
+                            <p><%= c.description.length > 100 ? c.description.substring(0, 100) + '...' : c.description %></p>
+                            <div class="clp-meta">
+                                <span><i class="fas fa-chalkboard-teacher"></i> <%= c.formateur %></span>
+                                <span><i class="fas fa-calendar"></i> <%= c.dateLisible %></span>
+                                <span><i class="fas fa-clock"></i> <%= c.heure_debut %> - <%= c.heure_fin %></span>
+                                <span><i class="fas fa-video"></i> <%= c.plateforme %></span>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } %>
+        </div>
+        <div class="section-cta" style="margin-top:24px;">
+            <a href="/cours-live" class="btn btn-primary"><i class="fas fa-broadcast-tower"></i> Accéder à l'espace Cours Live</a>
+        </div>
+    </div>
+</section>

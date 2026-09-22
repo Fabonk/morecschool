@@ -1,0 +1,7 @@
+<%# En-tête de section réutilisable : tag + titre + description, depuis section_entetes %>
+<% var e = contenu.entetes[cle] || {}; %>
+<div class="section-header"<% if (typeof style !== 'undefined') { %> style="<%= style %>"<% } %>>
+    <% if (e.tag) { %><span class="section-tag"><%= e.tag %></span><% } %>
+    <h2><%- formatTexte(e.titre) %></h2>
+    <% if (e.description) { %><p class="section-desc"><%= e.description %></p><% } %>
+</div>

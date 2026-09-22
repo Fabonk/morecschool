@@ -1,0 +1,58 @@
+<section class="section contact" id="contact">
+    <div class="container">
+        <%- include('_entete', { cle: 'contact' }) %>
+        <div class="contact-grid">
+            <div class="contact-info">
+                <% contenu.contactInfos.forEach(function (c) { %>
+                    <div class="contact-item">
+                        <div class="contact-icon"><i class="<%= c.icon %>"></i></div>
+                        <div>
+                            <strong><%= c.label %></strong>
+                            <p><%= c.valeur %></p>
+                        </div>
+                    </div>
+                <% }); %>
+                <div class="contact-social">
+                    <% contenu.reseauxSociaux.forEach(function (r) { %>
+                        <a href="<%= r.url %>" aria-label="<%= r.nom %>"<% if (r.url && r.url !== '#') { %> target="_blank" rel="noopener"<% } %>>
+                            <i class="<%= r.icon %>"></i>
+                        </a>
+                    <% }); %>
+                </div>
+            </div>
+            <div class="contact-form-wrapper">
+                <form class="contact-form" id="contactForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nom">Nom complet</label>
+                            <input type="text" id="nom" name="nom" placeholder="Votre nom" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" placeholder="Votre email" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="telephone">Téléphone</label>
+                        <input type="tel" id="telephone" name="telephone" placeholder="Votre téléphone">
+                    </div>
+                    <div class="form-group">
+                        <label for="contactFormation">Formation souhaitée</label>
+                        <select id="contactFormation" name="formation">
+                            <option value="">Choisir une formation</option>
+                            <%# Rempli côté serveur : plus besoin de loadFormations() dans le navigateur %>
+                            <% formations.forEach(function (f) { %>
+                                <option value="<%= f.titre %>"><%= f.titre %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" name="message" rows="5" placeholder="Votre message..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Envoyer le message</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>

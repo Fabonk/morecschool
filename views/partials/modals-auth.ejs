@@ -1,0 +1,89 @@
+    <div class="modal-overlay" id="modalLogin">
+        <div class="modal modal-login">
+            <button class="modal-close" id="closeModalLogin"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <span class="modal-icon login"><i class="fas fa-lock"></i></span>
+                <h3>Connexion</h3>
+            </div>
+            <p class="modal-desc">Accédez à votre espace membre ou à l'administration du site.</p>
+            <form class="modal-form" id="formLogin">
+                <div class="form-group">
+                    <label for="loginIdentifiant"><i class="fas fa-envelope"></i> Email ou identifiant</label>
+                    <input type="text" id="loginIdentifiant" required placeholder="votre@email.com" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="loginMotDePasse"><i class="fas fa-lock"></i> Mot de passe</label>
+                    <input type="password" id="loginMotDePasse" required placeholder="Votre mot de passe" autocomplete="current-password">
+                </div>
+                <p class="login-error-msg hidden" id="loginErrorMsg"></p>
+                <button type="submit" class="btn btn-primary btn-block" id="btnSubmitLogin">
+                    <i class="fas fa-sign-in-alt"></i> Se connecter
+                </button>
+                <p class="login-hint">Pas encore membre ? <a href="#" id="linkVersInscription">Devenir membre</a></p>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalMembre">
+        <div class="modal">
+            <button class="modal-close" id="closeModalMembre"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <span class="modal-icon membre"><i class="fas fa-id-card"></i></span>
+                <h3>Devenir Membre MOREC</h3>
+            </div>
+            <p class="modal-desc">Rejoignez notre communauté de leaders. Choisissez votre type de membre et remplissez le formulaire.</p>
+            <form class="modal-form" id="formMembre">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="membreNom"><i class="fas fa-user"></i> Nom *</label>
+                        <input type="text" id="membreNom" name="nom" required placeholder="Votre nom">
+                    </div>
+                    <div class="form-group">
+                        <label for="membrePrenom"><i class="fas fa-user"></i> Prénom *</label>
+                        <input type="text" id="membrePrenom" name="prenom" required placeholder="Votre prénom">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="membreEmail"><i class="fas fa-envelope"></i> Email *</label>
+                        <input type="email" id="membreEmail" name="email" required placeholder="votre@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="membreTel"><i class="fas fa-phone"></i> Téléphone *</label>
+                        <input type="tel" id="membreTel" name="telephone" required placeholder="+225 07 00 00 00 00">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="membreType"><i class="fas fa-id-badge"></i> Type de membre *</label>
+                    <select id="membreType" name="type_membre" required>
+                        <option value="" disabled selected>Choisir un type de membre</option>
+                        <option value="sympathisant">Sympathisant — Soutien moral et intérêt pour nos activités</option>
+                        <option value="actif">Actif — Participation régulière aux événements et formations</option>
+                        <option value="tres_actif">Très Actif — Engagement fort, bénévolat et leadership</option>
+                        <option value="honoraire">Honoraire — Membre d'honneur pour contribution exceptionnelle</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="membrePassword"><i class="fas fa-lock"></i> Mot de passe * <small>(min. 6 caractères — pour accéder aux Cours Live)</small></label>
+                    <input type="password" id="membrePassword" name="password" required minlength="6" placeholder="Choisissez un mot de passe">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="membreVille"><i class="fas fa-map-marker-alt"></i> Ville</label>
+                        <input type="text" id="membreVille" name="ville" placeholder="Votre ville">
+                    </div>
+                    <div class="form-group">
+                        <label for="membreProfession"><i class="fas fa-briefcase"></i> Profession</label>
+                        <input type="text" id="membreProfession" name="profession" placeholder="Votre profession">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-check-circle"></i> S'enregistrer comme Membre</button>
+            </form>
+            <div class="modal-success hidden" id="membreSuccess">
+                <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+                <h3>Bienvenue chez MOREC !</h3>
+                <p>Votre enregistrement a été effectué avec succès. Nous sommes ravis de vous compter parmi nos membres.</p>
+                <button class="btn btn-primary" id="btnFermerSuccesMembre">Fermer</button>
+            </div>
+        </div>
+    </div>

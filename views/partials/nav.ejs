@@ -1,0 +1,46 @@
+<%#
+    Navigation — source unique pour les 8 pages.
+    data-solid : sur les pages sans héros, la barre reste opaque. Sans cela elle
+    est transparente (background: transparent tant que .scrolled est absent) et
+    devient invisible sur les fonds clairs, tout en recouvrant la 1re section.
+%>
+<nav class="navbar<%= heroOverlay ? '' : ' scrolled' %>" id="navbar"<% if (!heroOverlay) { %> data-solid="1"<% } %>>
+    <div class="container nav-container">
+        <a href="/" class="logo">
+            <img src="/LogoMorecStructure.jpeg" alt="MOREC Structure">
+        </a>
+        <button class="nav-toggle" id="navToggle" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <ul class="nav-links" id="navLinks">
+            <% MENU.forEach(function (item) { %>
+                <li>
+                    <a href="<%= item.url %>"
+                       class="<%= item.icone ? 'nav-icon' : '' %><%= page === item.page ? ' active' : '' %>"
+                       <% if (item.icone) { %>data-tooltip="<%= item.libelle %>" aria-label="<%= item.libelle %>"<% } %>
+                       <% if (page === item.page) { %>aria-current="page"<% } %>>
+                        <% if (item.icone) { %><i class="<%= item.icone %>"></i><span class="nav-label"><%= item.libelle %></span>
+                        <% } else { %><%= item.libelle %><% } %>
+                    </a>
+                </li>
+            <% }); %>
+            <li class="nav-auth" id="navAuth">
+                <a href="#" class="btn-nav btn-login nav-icon" id="btnSeConnecter" data-tooltip="Se connecter" aria-label="Se connecter">
+                    <i class="fas fa-sign-in-alt"></i><span class="nav-label">Se connecter</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="btn-nav btn-membre nav-icon" id="btnDevenirMembre" data-tooltip="Devenir Membre" aria-label="Devenir Membre">
+                    <i class="fas fa-user-plus"></i><span class="nav-label">Devenir Membre</span>
+                </a>
+            </li>
+            <li>
+                <a href="/contact" class="btn-nav nav-icon<%= page === 'contact' ? ' active' : '' %>" data-tooltip="Contact" aria-label="Contact">
+                    <i class="fas fa-envelope"></i><span class="nav-label">Contact</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>

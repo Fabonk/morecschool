@@ -1,0 +1,19 @@
+<section class="section equipe" id="equipe">
+    <div class="container">
+        <%- include('_entete', { cle: 'equipe' }) %>
+        <div class="equipe-grid" id="equipeGrid">
+            <% equipe.forEach(function (m) { %>
+                <div class="equipe-card">
+                    <div class="equipe-avatar"><i class="fas fa-user"></i></div>
+                    <h3><%= m.nom %></h3>
+                    <span class="equipe-role"><%= m.role %></span>
+                    <p><%= m.description %></p>
+                    <div class="equipe-social">
+                        <a href="<%= m.linkedin %>" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                        <a href="<%= m.facebook %>" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+</section>

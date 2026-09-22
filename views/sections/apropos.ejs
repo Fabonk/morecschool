@@ -1,0 +1,31 @@
+<section class="section apropos" id="apropos">
+    <div class="container">
+        <%- include('_entete', { cle: 'apropos' }) %>
+        <div class="apropos-grid">
+            <div class="apropos-image">
+                <img src="/LogoMorecStructure.jpeg" alt="MOREC Structure">
+                <div class="apropos-badge">
+                    <span><%= contenu.textes['apropos.badge_nombre'] %></span>
+                    <small><%= contenu.textes['apropos.badge_texte'] %></small>
+                </div>
+            </div>
+            <div class="apropos-text">
+                <% contenu.aproposBlocs.forEach(function (b) { %>
+                    <h3><%= b.titre %></h3>
+                    <p><%- formatTexte(b.texte) %></p>
+                <% }); %>
+                <div class="apropos-values">
+                    <% contenu.aproposValeurs.forEach(function (v) { %>
+                        <div class="value-item">
+                            <i class="<%= v.icon %>"></i>
+                            <div>
+                                <strong><%= v.titre %></strong>
+                                <span><%= v.texte %></span>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

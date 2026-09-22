@@ -1,0 +1,14 @@
+<section class="section pourquoi" id="pourquoi">
+    <div class="container">
+        <%- include('_entete', { cle: 'pourquoi' }) %>
+        <div class="pourquoi-grid" id="pourquoiGrid">
+            <% pourquoi.forEach(function (p) { %>
+                <div class="pourquoi-card">
+                    <div class="pourquoi-number"><%= p.numero %></div>
+                    <h3><%= p.titre %></h3>
+                    <p><%= p.description %></p>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+</section>

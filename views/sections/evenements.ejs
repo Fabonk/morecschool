@@ -1,0 +1,45 @@
+<section class="section evenements" id="evenements">
+    <div class="container">
+        <%- include('_entete', { cle: 'evenements' }) %>
+        <% if (!limite) { %>
+            <div class="events-filters">
+                <button class="event-filter active" data-filter="all">Tous</button>
+                <button class="event-filter" data-filter="formation">Formations</button>
+                <button class="event-filter" data-filter="conference">Conférences</button>
+                <button class="event-filter" data-filter="coaching">Coaching</button>
+                <button class="event-filter" data-filter="masterclass">Masterclass</button>
+            </div>
+        <% } %>
+        <div class="events-grid" id="eventsGrid">
+            <% evenements.forEach(function (ev) { %>
+                <div class="event-card" data-category="<%= ev.categorie %>">
+                    <div class="event-badge"><%= ev.categorie %></div>
+                    <% if (ev.image) { %>
+                        <div class="event-image"><img src="<%= ev.image %>" alt="<%= ev.titre %>" loading="lazy"></div>
+                    <% } else { %>
+                        <div class="event-icon"><i class="<%= ev.icon %>"></i></div>
+                    <% } %>
+                    <div class="event-content">
+                        <h3><%= ev.titre %></h3>
+                        <p><%= ev.description %></p>
+                        <div class="event-details">
+                            <span><i class="fas fa-calendar-alt"></i> <%= ev.date_event %></span>
+                            <span><i class="fas fa-map-marker-alt"></i> <%= ev.lieu %></span>
+                            <span><i class="fas fa-users"></i> <%= ev.places %> places</span>
+                        </div>
+                        <button class="btn btn-primary btn-inscription"
+                            data-event="<%= ev.titre %>"
+                            data-date="<%= ev.date_event %>"
+                            data-lieu="<%= ev.lieu %>"
+                            data-event-id="<%= ev.id %>">
+                            <i class="fas fa-pen-to-square"></i> S'inscrire
+                        </button>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+        <% if (limite) { %>
+            <div class="section-cta"><a href="/evenements" class="btn btn-primary">Tous les événements</a></div>
+        <% } %>
+    </div>
+</section>

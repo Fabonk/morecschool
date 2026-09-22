@@ -1,0 +1,29 @@
+<section class="section galerie" id="galerie">
+    <div class="container">
+        <%- include('_entete', { cle: 'galerie' }) %>
+        <div class="albums-grid" id="albumsGrid">
+            <% if (!albums.length) { %>
+                <p class="no-data">Aucun album pour le moment.</p>
+            <% } %>
+            <% albums.forEach(function (a) { %>
+                <div class="album-card" data-album-id="<%= a.id %>">
+                    <div class="album-cover">
+                        <% if (a.cover_image) { %>
+                            <img src="<%= a.cover_image %>" alt="<%= a.titre %>" loading="lazy">
+                        <% } else { %>
+                            <div class="album-cover-placeholder"><i class="fas fa-images"></i></div>
+                        <% } %>
+                        <div class="album-overlay">
+                            <span class="album-photo-count"><i class="fas fa-camera"></i> <%= a.photoCount %> photo<%= a.photoCount > 1 ? 's' : '' %></span>
+                        </div>
+                    </div>
+                    <div class="album-info">
+                        <h3><%= a.titre %></h3>
+                        <% if (a.description) { %><p><%= a.description %></p><% } %>
+                        <% if (a.date_album) { %><span class="album-date"><i class="fas fa-calendar-alt"></i> <%= a.date_album %></span><% } %>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+</section>

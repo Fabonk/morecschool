@@ -1,0 +1,30 @@
+<section class="hero" id="accueil">
+    <div class="hero-carousel" id="heroCarousel">
+        <% heroSlides.forEach(function (s, i) { %>
+            <div class="hero-slide<%= i === 0 ? ' active' : '' %>" style="background-image:url('<%= s.image %>')"></div>
+        <% }); %>
+    </div>
+    <div class="hero-overlay"></div>
+    <div class="container hero-content">
+        <span class="hero-badge"><%= contenu.textes['hero.badge'] %></span>
+        <h1><%- formatTexte(contenu.textes['hero.titre']) %></h1>
+        <p class="hero-subtitle"><%- formatTexte(contenu.textes['hero.sous_titre']) %></p>
+        <div class="hero-btns">
+            <a href="<%= contenu.textes['hero.bouton1_lien'] %>" class="btn btn-primary"><%= contenu.textes['hero.bouton1_texte'] %></a>
+            <a href="<%= contenu.textes['hero.bouton2_lien'] %>" class="btn btn-outline"><%= contenu.textes['hero.bouton2_texte'] %></a>
+        </div>
+        <div class="hero-stats" id="heroStats">
+            <% stats.forEach(function (s) { %>
+                <div class="stat-item">
+                    <span class="stat-number" data-target="<%= s.nombre %>">0</span><span class="stat-suffix"><%= s.suffixe || '' %></span>
+                    <span class="stat-label"><%= s.label %></span>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+    <div class="hero-carousel-dots" id="heroCarouselDots">
+        <% if (heroSlides.length > 1) { heroSlides.forEach(function (s, i) { %>
+            <span class="hero-dot<%= i === 0 ? ' active' : '' %>" data-index="<%= i %>"></span>
+        <% }); } %>
+    </div>
+</section>

@@ -1,0 +1,48 @@
+<footer class="footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-about">
+                <img src="/LogoMorecStructure.jpeg" alt="MOREC Structure" class="footer-logo">
+                <p><%- formatTexte(contenu.textes['footer.a_propos']) %></p>
+                <div class="footer-social">
+                    <% contenu.reseauxSociaux.forEach(function (r) { %>
+                        <a href="<%= r.url %>" aria-label="<%= r.nom %>"<% if (r.url && r.url !== '#') { %> target="_blank" rel="noopener"<% } %>>
+                            <i class="<%= r.icon %>"></i>
+                        </a>
+                    <% }); %>
+                </div>
+            </div>
+            <div class="footer-links">
+                <h4><%= contenu.textes['footer.col1_titre'] %></h4>
+                <ul>
+                    <% contenu.footerLiens.liens.forEach(function (l) { %>
+                        <li><a href="<%= l.url %>"><%= l.libelle %></a></li>
+                    <% }); %>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4><%= contenu.textes['footer.col2_titre'] %></h4>
+                <ul>
+                    <% contenu.footerLiens.formations.forEach(function (l) { %>
+                        <li><a href="<%= l.url %>"><%= l.libelle %></a></li>
+                    <% }); %>
+                </ul>
+            </div>
+            <div class="footer-newsletter">
+                <h4><%= contenu.textes['footer.newsletter_titre'] %></h4>
+                <p><%= contenu.textes['footer.newsletter_texte'] %></p>
+                <form class="newsletter-form">
+                    <input type="email" placeholder="Votre email" required>
+                    <button type="submit" aria-label="S'inscrire"><i class="fas fa-paper-plane"></i></button>
+                </form>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p><%= contenu.textes['footer.copyright'] %></p>
+        </div>
+    </div>
+</footer>
+
+<button class="scroll-top" id="scrollTop" aria-label="Retour en haut">
+    <i class="fas fa-chevron-up"></i>
+</button>

@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const { db, seedIfEmpty } = require('./database');
+const { formatTexte, chargerContenu, chargerSeo, MENU } = require('./lib/contenu');
 const authMiddleware = require('./middleware/auth');
 const memberAuthMiddleware = require('./middleware/memberAuth');
 
@@ -110,9 +111,17 @@ function deleteFromCloudinary(imageUrl) {
 }
 
 const app = express();
+
+// Moteur de gabarits : les pages publiques sont rendues côté serveur, ce qui
+// supprime les 12 appels d'API que le navigateur passait à chaque chargement.
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+// index: false — sinon express.static servirait public/index.html sur « / »
+// et masquerait la route de la page d'accueil définie plus bas.
+app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
 // ============================================================
 //  PUBLIC API ROUTES
@@ -145,13 +154,19 @@ app.get('/api/citations', (req, res) => {
     res.json(rows);
 });
 
-app.get('/api/citations/today', (req, res) => {
+// Une citation par jour, la même pour tous les visiteurs d'une même journée.
+// Extraite en fonction pour être partagée avec le rendu serveur de l'accueil.
+function citationDuJour() {
     const all = db.prepare('SELECT * FROM citations').all();
-    if (all.length === 0) return res.json(null);
+    if (all.length === 0) return null;
     const now = new Date();
     const start = new Date(now.getFullYear(), 0, 0);
     const dayOfYear = Math.floor((now - start) / (1000 * 60 * 60 * 24));
-    res.json(all[dayOfYear % all.length]);
+    return all[dayOfYear % all.length];
+}
+
+app.get('/api/citations/today', (req, res) => {
+    res.json(citationDuJour());
 });
 
 // --- Formations ---
@@ -1175,9 +1190,138 @@ app.put('/api/admin/password', authMiddleware, (req, res) => {
 });
 
 // ============================================================
-//  SERVE HTML PAGES
+//  PAGES DU SITE (rendu serveur, un gabarit EJS par page)
 // ============================================================
 
+// Prépare les variables communes à tous les gabarits. Le contenu est lu en base
+// à chaque requête : plus aucun appel d'API depuis le navigateur au chargement.
+function contexte(page, heroOverlay = false) {
+    return {
+        page,
+        heroOverlay,
+        seo: chargerSeo(page),
+        contenu: chargerContenu(),
+        formatTexte,
+        MENU
+    };
+}
+
+const LABELS_STATUT = { planifie: 'Planifié', en_cours: 'En cours', termine: 'Terminé' };
+const CLASSES_STATUT = { planifie: 'status-planifie', en_cours: 'status-encours', termine: 'status-termine' };
+const LABELS_CATEGORIE_PDF = {
+    general: { label: 'Général', icon: 'fas fa-book' },
+    leadership: { label: 'Leadership', icon: 'fas fa-crown' },
+    management: { label: 'Management', icon: 'fas fa-briefcase' },
+    developpement: { label: 'Développement personnel', icon: 'fas fa-seedling' }
+};
+
+function lireFormations(limite) {
+    const sql = 'SELECT * FROM formations ORDER BY ordre' + (limite ? ' LIMIT ?' : '');
+    return limite ? db.prepare(sql).all(limite) : db.prepare(sql).all();
+}
+
+function lireEvenements(limite) {
+    const sql = 'SELECT * FROM evenements ORDER BY ordre' + (limite ? ' LIMIT ?' : '');
+    return limite ? db.prepare(sql).all(limite) : db.prepare(sql).all();
+}
+
+function lireTemoignages(limite) {
+    const sql = 'SELECT * FROM temoignages ORDER BY id' + (limite ? ' LIMIT ?' : '');
+    return limite ? db.prepare(sql).all(limite) : db.prepare(sql).all();
+}
+
+app.get('/', (req, res, next) => {
+    try {
+        res.render('pages/accueil', {
+            ...contexte('accueil', true),
+            heroSlides: db.prepare('SELECT * FROM hero_slides ORDER BY ordre, id').all(),
+            stats: db.prepare('SELECT * FROM stats ORDER BY ordre').all(),
+            citation: citationDuJour(),
+            formations: lireFormations(3),
+            evenements: lireEvenements(3),
+            temoignages: lireTemoignages(3)
+        });
+    } catch (err) { next(err); }
+});
+
+app.get('/a-propos', (req, res, next) => {
+    try {
+        res.render('pages/a-propos', {
+            ...contexte('a-propos'),
+            equipe: db.prepare('SELECT * FROM equipe ORDER BY ordre').all()
+        });
+    } catch (err) { next(err); }
+});
+
+app.get('/formations', (req, res, next) => {
+    try {
+        res.render('pages/formations', {
+            ...contexte('formations'),
+            formations: lireFormations(),
+            pourquoi: db.prepare('SELECT * FROM pourquoi ORDER BY ordre').all()
+        });
+    } catch (err) { next(err); }
+});
+
+app.get('/evenements', (req, res, next) => {
+    try {
+        res.render('pages/evenements', {
+            ...contexte('evenements'),
+            evenements: lireEvenements()
+        });
+    } catch (err) { next(err); }
+});
+
+app.get('/cours', (req, res, next) => {
+    try {
+        const playlists = db.prepare('SELECT * FROM playlists ORDER BY ordre').all();
+        playlists.forEach(pl => {
+            pl.videos = db.prepare('SELECT * FROM videos WHERE playlist_id = ? ORDER BY ordre').all(pl.id);
+        });
+
+        const coursPdfs = db.prepare('SELECT * FROM cours_pdfs ORDER BY ordre, date_ajout DESC').all()
+            .map(p => {
+                const cat = LABELS_CATEGORIE_PDF[p.categorie] || LABELS_CATEGORIE_PDF.general;
+                return { ...p, catLabel: cat.label, catIcon: cat.icon };
+            });
+
+        const coursLive = db.prepare("SELECT * FROM cours_live WHERE statut != 'termine' ORDER BY date_cours, heure_debut LIMIT 3").all()
+            .map(c => ({
+                ...c,
+                statutLabel: LABELS_STATUT[c.statut] || c.statut,
+                statutClasse: CLASSES_STATUT[c.statut] || '',
+                dateLisible: c.date_cours
+                    ? new Date(c.date_cours + 'T00:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+                    : ''
+            }));
+
+        res.render('pages/cours', { ...contexte('cours'), playlists, coursPdfs, coursLive });
+    } catch (err) { next(err); }
+});
+
+app.get('/galerie', (req, res, next) => {
+    try {
+        const albums = db.prepare('SELECT * FROM albums ORDER BY ordre, id').all();
+        albums.forEach(a => {
+            a.photoCount = db.prepare('SELECT COUNT(*) as c FROM album_photos WHERE album_id = ?').get(a.id).c;
+        });
+        res.render('pages/galerie', { ...contexte('galerie'), albums });
+    } catch (err) { next(err); }
+});
+
+app.get('/temoignages', (req, res, next) => {
+    try {
+        res.render('pages/temoignages', { ...contexte('temoignages'), temoignages: lireTemoignages() });
+    } catch (err) { next(err); }
+});
+
+app.get('/contact', (req, res, next) => {
+    try {
+        res.render('pages/contact', { ...contexte('contact'), formations: lireFormations() });
+    } catch (err) { next(err); }
+});
+
+// --- Applications à part entière, servies telles quelles ---
 app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
@@ -1197,8 +1341,10 @@ app.use('/api', (req, res) => {
     res.status(404).json({ error: `Route d'API inconnue : ${req.method} ${req.originalUrl}` });
 });
 
-app.get('/{*path}', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Vraie page 404 : le catch-all renvoyait index.html en 200 pour n'importe
+// quelle URL, ce qui empêchait tout diagnostic et trompait les moteurs.
+app.use((req, res) => {
+    res.status(404).render('pages/404', contexte('404'));
 });
 
 // Gestionnaire d'erreurs centralisé : toujours du JSON, jamais la page HTML

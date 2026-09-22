@@ -1,0 +1,24 @@
+<section class="section formations" id="formations">
+    <div class="container">
+        <%- include('_entete', { cle: 'formations' }) %>
+        <div class="formations-grid" id="formationsGrid">
+            <% formations.forEach(function (f) { %>
+                <div class="formation-card<%= f.populaire ? ' populaire' : '' %>">
+                    <% if (f.populaire) { %><span class="badge-populaire"><i class="fas fa-fire"></i> Populaire</span><% } %>
+                    <div class="formation-icon"><i class="<%= f.icon %>"></i></div>
+                    <h3><%= f.titre %></h3>
+                    <p><%= f.description %></p>
+                    <div class="formation-meta">
+                        <span><i class="fas fa-clock"></i> <%= f.duree %></span>
+                        <% if (f.certificat) { %><span><i class="fas fa-certificate"></i> Certificat</span><% } %>
+                        <span><i class="fas fa-users"></i> <%= f.places %> places</span>
+                    </div>
+                    <a href="/contact?formation=<%= encodeURIComponent(f.titre) %>" class="btn btn-outline btn-block">Demander des informations</a>
+                </div>
+            <% }); %>
+        </div>
+        <% if (typeof limite !== 'undefined' && limite) { %>
+            <div class="section-cta"><a href="/formations" class="btn btn-primary">Voir toutes les formations</a></div>
+        <% } %>
+    </div>
+</section>

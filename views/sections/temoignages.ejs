@@ -1,0 +1,25 @@
+<section class="section temoignages" id="temoignages">
+    <div class="container">
+        <%- include('_entete', { cle: 'temoignages' }) %>
+        <div class="temoignages-grid" id="temoignagesGrid">
+            <% temoignages.forEach(function (t) { %>
+                <div class="temoignage-card">
+                    <div class="stars">
+                        <% for (var i = 0; i < 5; i++) { %><i class="fas fa-star<%= i < Math.round(t.etoiles) ? '' : '-o' %>"></i><% } %>
+                    </div>
+                    <p>"<%= t.texte %>"</p>
+                    <div class="temoignage-author">
+                        <div class="author-avatar"><%= t.initiales %></div>
+                        <div>
+                            <strong><%= t.nom %></strong>
+                            <span><%= t.role %></span>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+        <% if (typeof limite !== 'undefined' && limite) { %>
+            <div class="section-cta"><a href="/temoignages" class="btn btn-primary">Tous les témoignages</a></div>
+        <% } %>
+    </div>
+</section>
